@@ -131,7 +131,7 @@
                     <div class="restaurant-img-wrap">
                         <img
                             v-if="restaurant.image_path"
-                            :src="`http://localhost:8000/storage/${restaurant.image_path}`"
+                            :src="`https://restourant-production-6ae5.up.railway.app/storage/${restaurant.image_path}`"
                             class="restaurant-img"
                             alt="Restoran rasmi"
                         />

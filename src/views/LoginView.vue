@@ -110,7 +110,7 @@
 
 <script setup>
 const loginWithGoogle = () => {
-    window.location.href = 'http://localhost:8000/api/auth/google/redirect'
+    window.location.href = 'https://restourant-production-6ae5.up.railway.app/api/auth/google/redirect'
 }
 </script>
 
