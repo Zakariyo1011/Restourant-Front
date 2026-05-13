@@ -308,7 +308,7 @@ const createRestaurant = async (form) => {
     try {
         const data = buildFormData(form)
         const token = localStorage.getItem('token')
-        const res = await axios.post('http://localhost:8000/api/my-restaurant', data, {
+        const res = await axios.post(`${import.meta.env.VITE_API_URL}/my-restaurant`, data, {
             headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
         })
         restaurant.value = res.data
@@ -338,7 +338,7 @@ const updateRestaurant = async (form) => {
     try {
         const data = buildFormData(form)
         const token = localStorage.getItem('token')
-        const res = await axios.post('http://localhost:8000/api/my-restaurant/update', data, {
+        const res = await axios.post(`${import.meta.env.VITE_API_URL}/my-restaurant`, data, {
             headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
         })
         restaurant.value = res.data
