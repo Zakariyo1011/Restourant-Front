@@ -87,214 +87,194 @@
         </div>
 
         <!-- Main content -->
-        <div class="main">
-        <!-- Filters -->
-<div class="filters-card">
-    <div class="filters-header">
-        <h3><i class="fas fa-sliders-h"></i> Filtrlar</h3>
-        <button v-if="hasActiveFilters" @click="clearFilters" class="clear-btn">
-            <i class="fas fa-times"></i> Tozalash
-        </button>
-    </div>
-    <div class="filters-grid">
-        <!-- Taom yo'nalishi -->
-        <div class="filter-item">
-            <label class="filter-label">
-                <i class="fas fa-utensils"></i> Taom yo'nalishi
-            </label>
-            <select v-model="filters.cuisine_type" class="filter-select">
-                <option value="">Barchasi</option>
-                <option value="uzbek">O'zbek</option>
-                <option value="tajik">Tojik</option>
-                <option value="kazakh">Qozoq</option>
-                <option value="kyrgyz">Qirg'iz</option>
-                <option value="turkish">Turk</option>
-                <option value="arabic">Arab</option>
-                <option value="persian">Fors</option>
-                <option value="afghan">Afghan</option>
-                <option value="georgian">Gruzin</option>
-                <option value="russian">Rus</option>
-                <option value="european">Yevropa</option>
-                <option value="asian">Osiyo</option>
-                <option value="mixed">Aralash</option>
-            </select>
+<div class="main">
+    <!-- Filters -->
+    <div class="filters-card">
+        <div class="filters-header">
+            <h3><i class="fas fa-sliders-h"></i> Filtrlar</h3>
+            <button v-if="hasActiveFilters" @click="clearFilters" class="clear-btn">
+                <i class="fas fa-times"></i> Tozalash
+            </button>
         </div>
-
-        <!-- Mamlakat -->
-        <div class="filter-item">
-            <label class="filter-label">
-                <i class="fas fa-globe"></i> Mamlakat
-            </label>
-            <select v-model="filters.country" class="filter-select">
-                <option value="">Barchasi</option>
-                <option v-for="country in uniqueCountries" :key="country" :value="country">
-                    {{ country }}
-                </option>
-            </select>
-        </div>
-
-        <!-- Shahar -->
-        <div class="filter-item">
-            <label class="filter-label">
-                <i class="fas fa-city"></i> Shahar
-            </label>
-            <select v-model="filters.city" class="filter-select">
-                <option value="">Barchasi</option>
-                <option v-for="city in uniqueCities" :key="city" :value="city">
-                    {{ city }}
-                </option>
-            </select>
-        </div>
-
-        <!-- Narx -->
-        <div class="filter-item">
-            <label class="filter-label">
-                <i class="fas fa-tag"></i> Narx darajasi
-            </label>
-            <div class="price-filter">
-                <button
-                    v-for="price in ['$', '$$', '$$$']"
-                    :key="price"
-                    :class="['price-btn', { active: filters.price_range === price }]"
-                    @click="togglePrice(price)"
-                >
-                    {{ price }}
-                </button>
+        <div class="filters-grid">
+            <div class="filter-item">
+                <label class="filter-label">
+                    <i class="fas fa-utensils"></i> Taom yo'nalishi
+                </label>
+                <select v-model="filters.cuisine_type" class="filter-select">
+                    <option value="">Barchasi</option>
+                    <option value="uzbek">O'zbek</option>
+                    <option value="tajik">Tojik</option>
+                    <option value="kazakh">Qozoq</option>
+                    <option value="kyrgyz">Qirg'iz</option>
+                    <option value="turkish">Turk</option>
+                    <option value="arabic">Arab</option>
+                    <option value="persian">Fors</option>
+                    <option value="afghan">Afghan</option>
+                    <option value="georgian">Gruzin</option>
+                    <option value="russian">Rus</option>
+                    <option value="european">Yevropa</option>
+                    <option value="asian">Osiyo</option>
+                    <option value="mixed">Aralash</option>
+                </select>
             </div>
-        </div>
-    </div>
-
-    <!-- Active filters -->
-    <div v-if="hasActiveFilters" class="active-filters">
-        <span v-if="filters.cuisine_type" class="filter-tag">
-            🍽 {{ cuisineLabels[filters.cuisine_type] }}
-            <i class="fas fa-times" @click="filters.cuisine_type = ''"></i>
-        </span>
-        <span v-if="filters.country" class="filter-tag">
-            🌍 {{ filters.country }}
-            <i class="fas fa-times" @click="filters.country = ''"></i>
-        </span>
-        <span v-if="filters.city" class="filter-tag">
-            🏙 {{ filters.city }}
-            <i class="fas fa-times" @click="filters.city = ''"></i>
-        </span>
-        <span v-if="filters.price_range" class="filter-tag">
-            💰 {{ filters.price_range }}
-            <i class="fas fa-times" @click="filters.price_range = ''"></i>
-        </span>
-    </div>
-</div>
-            <div class="section-header">
-                <div>
-                    <h2 class="section-title">
-                        <i class="fas fa-fire section-icon"></i>
-                        Barcha restoranlar
-                    </h2>
-                    <p class="section-sub">{{ filtered.length }} ta restoran topildi</p>
-                </div>
-                <div class="filter-tabs">
-                    <button class="filter-tab active">Barchasi</button>
-                    <button class="filter-tab">Yangi</button>
+            <div class="filter-item">
+                <label class="filter-label">
+                    <i class="fas fa-globe"></i> Mamlakat
+                </label>
+                <select v-model="filters.country" class="filter-select">
+                    <option value="">Barchasi</option>
+                    <option v-for="country in uniqueCountries" :key="country" :value="country">
+                        {{ country }}
+                    </option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label class="filter-label">
+                    <i class="fas fa-city"></i> Shahar
+                </label>
+                <select v-model="filters.city" class="filter-select">
+                    <option value="">Barchasi</option>
+                    <option v-for="city in uniqueCities" :key="city" :value="city">
+                        {{ city }}
+                    </option>
+                </select>
+            </div>
+            <div class="filter-item">
+                <label class="filter-label">
+                    <i class="fas fa-tag"></i> Narx darajasi
+                </label>
+                <div class="price-filter">
+                    <button
+                        v-for="price in ['$', '$$', '$$$']"
+                        :key="price"
+                        :class="['price-btn', { active: filters.price_range === price }]"
+                        @click="togglePrice(price)"
+                    >
+                        {{ price }}
+                    </button>
                 </div>
             </div>
+        </div>
+        <div v-if="hasActiveFilters" class="active-filters">
+            <span v-if="filters.cuisine_type" class="filter-tag">
+                🍽 {{ cuisineLabels[filters.cuisine_type] }}
+                <i class="fas fa-times" @click="filters.cuisine_type = ''"></i>
+            </span>
+            <span v-if="filters.country" class="filter-tag">
+                🌍 {{ filters.country }}
+                <i class="fas fa-times" @click="filters.country = ''"></i>
+            </span>
+            <span v-if="filters.city" class="filter-tag">
+                🏙 {{ filters.city }}
+                <i class="fas fa-times" @click="filters.city = ''"></i>
+            </span>
+            <span v-if="filters.price_range" class="filter-tag">
+                💰 {{ filters.price_range }}
+                <i class="fas fa-times" @click="filters.price_range = ''"></i>
+            </span>
+        </div>
+    </div>
 
+    <!-- Section header -->
+    <div class="section-header">
+        <div>
             <h2 class="section-title">
-            <i class="fas fa-fire section-icon"></i>
-            {{ locationActive ? 'Yaqin restoranlar' : 'Barcha restoranlarr' }}
-        </h2>
-        <p class="section-sub">{{ filtered.length }} ta restoran topildi</p>
+                <i class="fas fa-fire section-icon"></i>
+                {{ locationActive ? 'Yaqin restoranlar' : 'Barcha restoranlar' }}
+            </h2>
+            <p class="section-sub">{{ filtered.length }} ta restoran topildi</p>
+        </div>
+        <div class="sort-wrap">
+            <select v-model="sortBy" class="sort-select">
+                <option value="default">Saralash</option>
+                <option value="distance" v-if="locationActive">Masofaga ko'ra</option>
+                <option value="name">Nomiga ko'ra</option>
+            </select>
+        </div>
     </div>
-    <div class="sort-wrap">
-        <select v-model="sortBy" class="sort-select">
-            <option value="default">Saralash</option>
-            <option value="distance" v-if="locationActive">Masofaga ko'ra</option>
-            <option value="name">Nomiga ko'ra</option>
-        </select>
-    </div>
-</div>
 
-            <!-- Loading -->
-            <div v-if="loading" class="loading-state">
-                <div class="loading-grid">
-                    <div v-for="i in 6" :key="i" class="skeleton-card">
-                        <div class="skeleton-img"></div>
-                        <div class="skeleton-body">
-                            <div class="skeleton-line w70"></div>
-                            <div class="skeleton-line w90"></div>
-                            <div class="skeleton-line w50"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Empty -->
-            <div v-else-if="filtered.length === 0" class="empty-state">
-                <div class="empty-icon">
-                    <i class="fas fa-store-slash"></i>
-                </div>
-                <h3>Hech narsa topilmadi</h3>
-                <p>Boshqa so'z bilan qidiring</p>
-            </div>
-
-            <!-- Grid -->
-            <div v-else class="grid">
-                <div
-                    v-for="r in filtered"
-                    :key="r.id"
-                    class="card"
-                    @click="$router.push(`/restaurant/${r.id}`)"
-                >
-                    <div class="card-img-wrap">
-                        <img
-                            v-if="r.image_path"
-                            :src="`https://restourant-production-6ae5.up.railway.app/storage/${r.image_path}`"
-                            :alt="r.name"
-                            class="card-img"
-                        />
-                        <div v-else class="card-no-img">
-                            <i class="fas fa-utensils"></i>
-                        </div>
-                        <div class="card-badge">
-                            <i class="fas fa-circle"></i> Ochiq
-                        </div>
-                        
-                        <div class="distance-badge" v-if="r.distance">
-                            <i class="fas fa-route"></i>
-                         {{ r.distance }} km
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <h3 class="card-title">{{ r.name }}</h3>
-                        <div class="card-cuisine" v-if="r.cuisine_type">
-    🍽 {{ cuisineLabels[r.cuisine_type] || r.cuisine_type }}
-</div>
-                        <p class="card-desc">{{ r.description || 'Tavsif yo\'q' }}</p>
-                        <div class="card-info">
-                            <span class="info-item">
-                                <i class="fas fa-phone-alt"></i>
-                                {{ r.phone || 'Telefon yo\'q' }}
-                            </span>
-                            <span v-if="r.location" class="info-item">
-                                <i class="fas fa-map-marker-alt"></i>
-                                {{ r.location.address || 'Manzil bor' }}
-                            </span>
-                             <span class="info-item" v-if="r.city || r.country">
-                                <i class="fas fa-map-marker-alt"></i>
-                                {{ r.city }}{{ r.city && r.country ? ', ' : '' }}{{ r.country }}
-                         </span>
-                            <span class="info-item" v-if="r.price_range">
-                             <i class="fas fa-tag"></i>
-                             {{ r.price_range }}
-                            </span>
-                        </div>
-                        <div class="card-cta">
-                            <span>Batafsil ko'rish</span>
-                            <i class="fas fa-arrow-right"></i>
-                        </div>
-                    </div>
+    <!-- Loading -->
+    <div v-if="loading" class="loading-state">
+        <div class="loading-grid">
+            <div v-for="i in 6" :key="i" class="skeleton-card">
+                <div class="skeleton-img"></div>
+                <div class="skeleton-body">
+                    <div class="skeleton-line w70"></div>
+                    <div class="skeleton-line w90"></div>
+                    <div class="skeleton-line w50"></div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Empty -->
+    <div v-else-if="filtered.length === 0" class="empty-state">
+        <div class="empty-icon">
+            <i class="fas fa-store-slash"></i>
+        </div>
+        <h3>Hech narsa topilmadi</h3>
+        <p>Boshqa so'z bilan qidiring</p>
+    </div>
+
+    <!-- Grid -->
+    <div v-else class="grid">
+        <div
+            v-for="r in filtered"
+            :key="r.id"
+            class="card"
+            @click="$router.push(`/restaurant/${r.id}`)"
+        >
+            <div class="card-img-wrap">
+                <img
+                    v-if="r.image_path"
+                    :src="`https://restourant-production-6ae5.up.railway.app/storage/${r.image_path}`"
+                    :alt="r.name"
+                    class="card-img"
+                />
+                <div v-else class="card-no-img">
+                    <i class="fas fa-utensils"></i>
+                </div>
+                <div class="card-badge">
+                    <i class="fas fa-circle"></i> Ochiq
+                </div>
+                <div class="distance-badge" v-if="r.distance">
+                    <i class="fas fa-route"></i>
+                    {{ r.distance }} km
+                </div>
+            </div>
+            <div class="card-body">
+                <h3 class="card-title">{{ r.name }}</h3>
+                <div class="card-cuisine" v-if="r.cuisine_type">
+                    🍽 {{ cuisineLabels[r.cuisine_type] || r.cuisine_type }}
+                </div>
+                <p class="card-desc">{{ r.description || 'Tavsif yo\'q' }}</p>
+                <div class="card-info">
+                    <span class="info-item">
+                        <i class="fas fa-phone-alt"></i>
+                        {{ r.phone || 'Telefon yo\'q' }}
+                    </span>
+                    <span v-if="r.location" class="info-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        {{ r.location.address || 'Manzil bor' }}
+                    </span>
+                    <span class="info-item" v-if="r.city || r.country">
+                        <i class="fas fa-map-marker-alt"></i>
+                        {{ r.city }}{{ r.city && r.country ? ', ' : '' }}{{ r.country }}
+                    </span>
+                    <span class="info-item" v-if="r.price_range">
+                        <i class="fas fa-tag"></i>
+                        {{ r.price_range }}
+                    </span>
+                </div>
+                <div class="card-cta">
+                    <span>Batafsil ko'rish</span>
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
         <!-- Footer -->
         <footer class="footer">
