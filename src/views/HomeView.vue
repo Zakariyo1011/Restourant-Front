@@ -200,7 +200,7 @@
 
             <h2 class="section-title">
             <i class="fas fa-fire section-icon"></i>
-            {{ locationActive ? 'Yaqin restoranlar' : 'Barcha restoranlar' }}
+            {{ locationActive ? 'Yaqin restoranlar' : 'Barcha restoranlarr' }}
         </h2>
         <p class="section-sub">{{ filtered.length }} ta restoran topildi</p>
     </div>
