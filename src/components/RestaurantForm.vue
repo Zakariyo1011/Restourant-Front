@@ -90,6 +90,103 @@
                 />
             </div>
 
+            <!-- Taom yo'nalishi -->
+<div class="field-group">
+    <label class="field-label">
+        <i class="fas fa-utensils"></i>
+        Taom yo'nalishi
+    </label>
+    <select v-model="form.cuisine_type" class="field-input">
+        <option value="">Tanlang...</option>
+        <option value="uzbek">O'zbek</option>
+        <option value="tajik">Tojik</option>
+        <option value="kazakh">Qozoq</option>
+        <option value="kyrgyz">Qirg'iz</option>
+        <option value="turkish">Turk</option>
+        <option value="arabic">Arab</option>
+        <option value="persian">Fors</option>
+        <option value="afghan">Afghan</option>
+        <option value="georgian">Gruzin</option>
+        <option value="russian">Rus</option>
+        <option value="european">Yevropa</option>
+        <option value="asian">Osiyo</option>
+        <option value="mixed">Aralash</option>
+    </select>
+</div>
+
+<!-- Mamlakat va Shahar -->
+<div class="form-row">
+    <div class="field-group">
+        <label class="field-label">
+            <i class="fas fa-globe"></i>
+            Mamlakat
+        </label>
+        <input
+            v-model="form.country"
+            placeholder="Masalan: United Kingdom"
+            class="field-input"
+        />
+    </div>
+    <div class="field-group">
+        <label class="field-label">
+            <i class="fas fa-city"></i>
+            Shahar
+        </label>
+        <input
+            v-model="form.city"
+            placeholder="Masalan: London"
+            class="field-input"
+        />
+    </div>
+</div>
+
+<!-- Narx darajasi -->
+<div class="field-group">
+    <label class="field-label">
+        <i class="fas fa-tag"></i>
+        Narx darajasi
+    </label>
+    <div class="price-options">
+        <label
+            v-for="price in ['$', '$$', '$$$']"
+            :key="price"
+            :class="['price-option', { active: form.price_range === price }]"
+            @click="form.price_range = price"
+        >
+            {{ price }}
+        </label>
+    </div>
+</div>
+
+<!-- Veb-sayt va Instagram -->
+<div class="form-row">
+    <div class="field-group">
+        <label class="field-label">
+            <i class="fas fa-globe"></i>
+            Veb-sayt
+        </label>
+        <input
+            v-model="form.website"
+            placeholder="https://example.com"
+            class="field-input"
+        />
+    </div>
+    <div class="field-group">
+        <label class="field-label">
+            <i class="fab fa-instagram"></i>
+            Instagram
+        </label>
+        <div class="input-with-prefix">
+            <span class="prefix">@</span>
+            <input
+                v-model="form.instagram"
+                placeholder="restoran_nomi"
+                class="field-input prefix-input"
+            />
+        </div>
+    </div>
+</div>
+
             <!-- Koordinatalar -->
             <div class="field-group">
                 <label class="field-label">
@@ -174,6 +271,12 @@ const form = ref({
     latitude: '',
     longitude: '',
     image: null,
+    cuisine_type: '',
+    country: '',
+    city: '',
+    price_range: '',
+    website: '',
+    instagram: '',
 })
 
 const previewUrl = ref(null)
@@ -337,6 +440,24 @@ const submit = () => {
     cursor: pointer; transition: background 0.2s;
 }
 .btn-cancel:hover { background: #e8e8e8; }
+
+/* PRICE OPTIONS */
+.price-options {
+    display: flex; gap: 10px;
+}
+.price-option {
+    flex: 1; padding: 10px;
+    border: 1.5px solid #e8e8e8;
+    border-radius: 10px; text-align: center;
+    cursor: pointer; font-size: 15px; font-weight: 600;
+    color: #888; transition: all 0.2s;
+}
+.price-option.active {
+    border-color: #1D9E75;
+    background: #E1F5EE;
+    color: #0F6E56;
+}
+.price-option:hover { border-color: #1D9E75; }
 
 /* MOBILE */
 @media (max-width: 480px) {
