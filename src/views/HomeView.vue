@@ -40,6 +40,18 @@
                 </h1>
                 <p class="hero-sub">Manzil, menyu, telefon — barchasi bir joyda</p>
                 <div class="search-wrap">
+                
+                <!-- GPS tugmasi -->
+                    <div class="gps-wrap">
+                        <button @click="getUserLocation" :class="['gps-btn', { active: locationActive, loading: locationLoading }]">
+                         <i :class="locationLoading ? 'fas fa-spinner fa-spin' : 'fas fa-location-arrow'"></i>
+                         <span>{{ locationLoading ? 'Aniqlanmoqda...' : locationActive ? 'Joylashuv aniqlandi' : 'Mening joylashuvim' }}</span>
+                     </button>
+                     <span v-if="userLocation" class="gps-info">
+                          <i class="fas fa-check-circle"></i>
+                         {{ nearbyCount }} ta restoran yaqin atrofda
+                     </span>
+                    </div>
                     <div class="search-box">
                         <i class="fas fa-search search-icon"></i>
                         <input
@@ -186,6 +198,21 @@
                 </div>
             </div>
 
+            <h2 class="section-title">
+            <i class="fas fa-fire section-icon"></i>
+            {{ locationActive ? 'Yaqin restoranlar' : 'Barcha restoranlar' }}
+        </h2>
+        <p class="section-sub">{{ filtered.length }} ta restoran topildi</p>
+    </div>
+    <div class="sort-wrap">
+        <select v-model="sortBy" class="sort-select">
+            <option value="default">Saralash</option>
+            <option value="distance" v-if="locationActive">Masofaga ko'ra</option>
+            <option value="name">Nomiga ko'ra</option>
+        </select>
+    </div>
+</div>
+
             <!-- Loading -->
             <div v-if="loading" class="loading-state">
                 <div class="loading-grid">
@@ -229,6 +256,11 @@
                         </div>
                         <div class="card-badge">
                             <i class="fas fa-circle"></i> Ochiq
+                        </div>
+                        
+                        <div class="distance-badge" v-if="r.distance">
+                            <i class="fas fa-route"></i>
+                         {{ r.distance }} km
                         </div>
                     </div>
                     <div class="card-body">
@@ -278,6 +310,7 @@
 </template>
 
 <script setup>
+
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import api from '../axios'
@@ -286,6 +319,11 @@ const auth = useAuthStore()
 const restaurants = ref([])
 const loading = ref(true)
 const search = ref('')
+const sortBy = ref('default')
+const userLocation = ref(null)
+const locationActive = ref(false)
+const locationLoading = ref(false)
+const nearbyRestaurants = ref([])
 
 const filters = ref({
     cuisine_type: '',
@@ -302,17 +340,14 @@ const cuisineLabels = {
 }
 
 const uniqueCountries = computed(() => {
-    const countries = restaurants.value
-        .map(r => r.country)
-        .filter(Boolean)
+    const countries = restaurants.value.map(r => r.country).filter(Boolean)
     return [...new Set(countries)].sort()
 })
 
 const uniqueCities = computed(() => {
     const cities = restaurants.value
         .filter(r => !filters.value.country || r.country === filters.value.country)
-        .map(r => r.city)
-        .filter(Boolean)
+        .map(r => r.city).filter(Boolean)
     return [...new Set(cities)].sort()
 })
 
@@ -320,8 +355,10 @@ const hasActiveFilters = computed(() => {
     return Object.values(filters.value).some(v => v !== '')
 })
 
+const nearbyCount = computed(() => nearbyRestaurants.value.length)
+
 const filtered = computed(() => {
-    let result = restaurants.value
+    let result = locationActive.value ? nearbyRestaurants.value : restaurants.value
 
     if (search.value) {
         const q = search.value.toLowerCase()
@@ -336,21 +373,67 @@ const filtered = computed(() => {
     if (filters.value.cuisine_type) {
         result = result.filter(r => r.cuisine_type === filters.value.cuisine_type)
     }
-
     if (filters.value.country) {
         result = result.filter(r => r.country === filters.value.country)
     }
-
     if (filters.value.city) {
         result = result.filter(r => r.city === filters.value.city)
     }
-
     if (filters.value.price_range) {
         result = result.filter(r => r.price_range === filters.value.price_range)
     }
 
+    if (sortBy.value === 'distance' && locationActive.value) {
+        result = [...result].sort((a, b) => (a.distance || 0) - (b.distance || 0))
+    } else if (sortBy.value === 'name') {
+        result = [...result].sort((a, b) => a.name.localeCompare(b.name))
+    }
+
     return result
 })
+
+const getUserLocation = () => {
+    if (!navigator.geolocation) {
+        alert('Brauzeringiz GPS ni qo\'llab-quvvatlamaydi')
+        return
+    }
+
+    if (locationActive.value) {
+        locationActive.value = false
+        userLocation.value = null
+        nearbyRestaurants.value = []
+        sortBy.value = 'default'
+        return
+    }
+
+    locationLoading.value = true
+
+    navigator.geolocation.getCurrentPosition(
+        async (position) => {
+            const lat = position.coords.latitude
+            const lng = position.coords.longitude
+            userLocation.value = { lat, lng }
+
+            try {
+                const res = await api.get('/restaurants/nearby', {
+                    params: { lat, lng, radius: 50 }
+                })
+                nearbyRestaurants.value = res.data
+                locationActive.value = true
+                sortBy.value = 'distance'
+            } catch (e) {
+                console.error(e)
+            } finally {
+                locationLoading.value = false
+            }
+        },
+        (error) => {
+            locationLoading.value = false
+            alert('Joylashuvni aniqlab bo\'lmadi. Ruxsat bering.')
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+    )
+}
 
 const togglePrice = (price) => {
     filters.value.price_range = filters.value.price_range === price ? '' : price
@@ -368,6 +451,7 @@ onMounted(async () => {
         loading.value = false
     }
 })
+
 </script>
 
 <style scoped>
@@ -660,6 +744,52 @@ onMounted(async () => {
     background: #f0f0f0; color: #555;
     padding: 3px 8px; border-radius: 6px;
     font-size: 11px; margin-bottom: 6px;
+}
+
+/* GPS */
+.gps-wrap {
+    display: flex; align-items: center;
+    justify-content: center; gap: 12px;
+    flex-wrap: wrap;
+}
+.gps-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 20px;
+    background: rgba(255,255,255,0.15);
+    color: white; border: 1.5px solid rgba(255,255,255,0.4);
+    border-radius: 25px; font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+    backdrop-filter: blur(4px);
+}
+.gps-btn:hover { background: rgba(255,255,255,0.25); }
+.gps-btn.active {
+    background: white; color: #1D9E75;
+    border-color: white;
+}
+.gps-btn.loading { opacity: 0.8; cursor: not-allowed; }
+.gps-info {
+    display: flex; align-items: center; gap: 6px;
+    color: white; font-size: 13px;
+    background: rgba(255,255,255,0.15);
+    padding: 6px 14px; border-radius: 20px;
+}
+.gps-info i { color: #9FE1CB; }
+
+/* SORT */
+.sort-wrap { display: flex; align-items: center; }
+.sort-select {
+    padding: 8px 12px; border: 1.5px solid #e8e8e8;
+    border-radius: 10px; font-size: 13px;
+    outline: none; background: white; cursor: pointer;
+}
+
+/* DISTANCE BADGE */
+.distance-badge {
+    position: absolute; top: 12px; right: 12px;
+    background: rgba(0,0,0,0.6); color: white;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 500;
+    display: flex; align-items: center; gap: 4px;
 }
 
 /* Mobile */
