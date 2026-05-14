@@ -76,6 +76,102 @@
 
         <!-- Main content -->
         <div class="main">
+        <!-- Filters -->
+<div class="filters-card">
+    <div class="filters-header">
+        <h3><i class="fas fa-sliders-h"></i> Filtrlar</h3>
+        <button v-if="hasActiveFilters" @click="clearFilters" class="clear-btn">
+            <i class="fas fa-times"></i> Tozalash
+        </button>
+    </div>
+    <div class="filters-grid">
+        <!-- Taom yo'nalishi -->
+        <div class="filter-item">
+            <label class="filter-label">
+                <i class="fas fa-utensils"></i> Taom yo'nalishi
+            </label>
+            <select v-model="filters.cuisine_type" class="filter-select">
+                <option value="">Barchasi</option>
+                <option value="uzbek">O'zbek</option>
+                <option value="tajik">Tojik</option>
+                <option value="kazakh">Qozoq</option>
+                <option value="kyrgyz">Qirg'iz</option>
+                <option value="turkish">Turk</option>
+                <option value="arabic">Arab</option>
+                <option value="persian">Fors</option>
+                <option value="afghan">Afghan</option>
+                <option value="georgian">Gruzin</option>
+                <option value="russian">Rus</option>
+                <option value="european">Yevropa</option>
+                <option value="asian">Osiyo</option>
+                <option value="mixed">Aralash</option>
+            </select>
+        </div>
+
+        <!-- Mamlakat -->
+        <div class="filter-item">
+            <label class="filter-label">
+                <i class="fas fa-globe"></i> Mamlakat
+            </label>
+            <select v-model="filters.country" class="filter-select">
+                <option value="">Barchasi</option>
+                <option v-for="country in uniqueCountries" :key="country" :value="country">
+                    {{ country }}
+                </option>
+            </select>
+        </div>
+
+        <!-- Shahar -->
+        <div class="filter-item">
+            <label class="filter-label">
+                <i class="fas fa-city"></i> Shahar
+            </label>
+            <select v-model="filters.city" class="filter-select">
+                <option value="">Barchasi</option>
+                <option v-for="city in uniqueCities" :key="city" :value="city">
+                    {{ city }}
+                </option>
+            </select>
+        </div>
+
+        <!-- Narx -->
+        <div class="filter-item">
+            <label class="filter-label">
+                <i class="fas fa-tag"></i> Narx darajasi
+            </label>
+            <div class="price-filter">
+                <button
+                    v-for="price in ['$', '$$', '$$$']"
+                    :key="price"
+                    :class="['price-btn', { active: filters.price_range === price }]"
+                    @click="togglePrice(price)"
+                >
+                    {{ price }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active filters -->
+    <div v-if="hasActiveFilters" class="active-filters">
+        <span v-if="filters.cuisine_type" class="filter-tag">
+            🍽 {{ cuisineLabels[filters.cuisine_type] }}
+            <i class="fas fa-times" @click="filters.cuisine_type = ''"></i>
+        </span>
+        <span v-if="filters.country" class="filter-tag">
+            🌍 {{ filters.country }}
+            <i class="fas fa-times" @click="filters.country = ''"></i>
+        </span>
+        <span v-if="filters.city" class="filter-tag">
+            🏙 {{ filters.city }}
+            <i class="fas fa-times" @click="filters.city = ''"></i>
+        </span>
+        <span v-if="filters.price_range" class="filter-tag">
+            💰 {{ filters.price_range }}
+            <i class="fas fa-times" @click="filters.price_range = ''"></i>
+        </span>
+    </div>
+</div>
             <div class="section-header">
                 <div>
                     <h2 class="section-title">
@@ -137,6 +233,9 @@
                     </div>
                     <div class="card-body">
                         <h3 class="card-title">{{ r.name }}</h3>
+                        <div class="card-cuisine" v-if="r.cuisine_type">
+    🍽 {{ cuisineLabels[r.cuisine_type] || r.cuisine_type }}
+</div>
                         <p class="card-desc">{{ r.description || 'Tavsif yo\'q' }}</p>
                         <div class="card-info">
                             <span class="info-item">
@@ -146,6 +245,14 @@
                             <span v-if="r.location" class="info-item">
                                 <i class="fas fa-map-marker-alt"></i>
                                 {{ r.location.address || 'Manzil bor' }}
+                            </span>
+                             <span class="info-item" v-if="r.city || r.country">
+                                <i class="fas fa-map-marker-alt"></i>
+                                {{ r.city }}{{ r.city && r.country ? ', ' : '' }}{{ r.country }}
+                         </span>
+                            <span class="info-item" v-if="r.price_range">
+                             <i class="fas fa-tag"></i>
+                             {{ r.price_range }}
                             </span>
                         </div>
                         <div class="card-cta">
@@ -180,14 +287,78 @@ const restaurants = ref([])
 const loading = ref(true)
 const search = ref('')
 
-const filtered = computed(() => {
-    if (!search.value) return restaurants.value
-    const q = search.value.toLowerCase()
-    return restaurants.value.filter(r =>
-        r.name.toLowerCase().includes(q) ||
-        r.description?.toLowerCase().includes(q)
-    )
+const filters = ref({
+    cuisine_type: '',
+    country: '',
+    city: '',
+    price_range: '',
 })
+
+const cuisineLabels = {
+    uzbek: "O'zbek", tajik: 'Tojik', kazakh: 'Qozoq',
+    kyrgyz: "Qirg'iz", turkish: 'Turk', arabic: 'Arab',
+    persian: 'Fors', afghan: 'Afghan', georgian: 'Gruzin',
+    russian: 'Rus', european: 'Yevropa', asian: 'Osiyo', mixed: 'Aralash',
+}
+
+const uniqueCountries = computed(() => {
+    const countries = restaurants.value
+        .map(r => r.country)
+        .filter(Boolean)
+    return [...new Set(countries)].sort()
+})
+
+const uniqueCities = computed(() => {
+    const cities = restaurants.value
+        .filter(r => !filters.value.country || r.country === filters.value.country)
+        .map(r => r.city)
+        .filter(Boolean)
+    return [...new Set(cities)].sort()
+})
+
+const hasActiveFilters = computed(() => {
+    return Object.values(filters.value).some(v => v !== '')
+})
+
+const filtered = computed(() => {
+    let result = restaurants.value
+
+    if (search.value) {
+        const q = search.value.toLowerCase()
+        result = result.filter(r =>
+            r.name?.toLowerCase().includes(q) ||
+            r.description?.toLowerCase().includes(q) ||
+            r.city?.toLowerCase().includes(q) ||
+            r.country?.toLowerCase().includes(q)
+        )
+    }
+
+    if (filters.value.cuisine_type) {
+        result = result.filter(r => r.cuisine_type === filters.value.cuisine_type)
+    }
+
+    if (filters.value.country) {
+        result = result.filter(r => r.country === filters.value.country)
+    }
+
+    if (filters.value.city) {
+        result = result.filter(r => r.city === filters.value.city)
+    }
+
+    if (filters.value.price_range) {
+        result = result.filter(r => r.price_range === filters.value.price_range)
+    }
+
+    return result
+})
+
+const togglePrice = (price) => {
+    filters.value.price_range = filters.value.price_range === price ? '' : price
+}
+
+const clearFilters = () => {
+    filters.value = { cuisine_type: '', country: '', city: '', price_range: '' }
+}
 
 onMounted(async () => {
     try {
@@ -416,6 +587,88 @@ onMounted(async () => {
 .footer-brand { display: flex; align-items: center; gap: 8px; color: white; font-size: 16px; font-weight: 600; }
 .footer-brand i { color: #1D9E75; }
 .footer-copy { font-size: 13px; color: #666; }
+
+/* FILTERS */
+.filters-card {
+    background: white; border-radius: 16px;
+    padding: 20px; margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.filters-header {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 16px;
+}
+.filters-header h3 {
+    font-size: 15px; font-weight: 700; color: #1a1a1a;
+    display: flex; align-items: center; gap: 8px;
+}
+.filters-header h3 i { color: #1D9E75; }
+.clear-btn {
+    display: flex; align-items: center; gap: 4px;
+    padding: 6px 12px; background: #FCEBEB;
+    color: #A32D2D; border: none; border-radius: 8px;
+    font-size: 12px; cursor: pointer;
+}
+.filters-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 16px; margin-bottom: 12px;
+}
+.filter-item { display: flex; flex-direction: column; gap: 6px; }
+.filter-label {
+    font-size: 12px; font-weight: 600; color: #666;
+    display: flex; align-items: center; gap: 5px;
+}
+.filter-label i { color: #1D9E75; font-size: 11px; }
+.filter-select {
+    padding: 9px 12px; border: 1.5px solid #e8e8e8;
+    border-radius: 10px; font-size: 13px; outline: none;
+    background: white; color: #1a1a1a; cursor: pointer;
+    transition: border 0.2s;
+}
+.filter-select:focus { border-color: #1D9E75; }
+
+/* PRICE FILTER */
+.price-filter { display: flex; gap: 6px; }
+.price-btn {
+    flex: 1; padding: 8px 4px;
+    border: 1.5px solid #e8e8e8;
+    border-radius: 8px; background: white;
+    font-size: 13px; font-weight: 600; color: #888;
+    cursor: pointer; transition: all 0.2s;
+}
+.price-btn.active {
+    border-color: #1D9E75; background: #E1F5EE; color: #0F6E56;
+}
+.price-btn:hover { border-color: #1D9E75; }
+
+/* ACTIVE FILTERS */
+.active-filters {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    padding-top: 12px; border-top: 1px solid #f0f0f0;
+}
+.filter-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #E1F5EE; color: #0F6E56;
+    padding: 5px 12px; border-radius: 20px; font-size: 13px;
+}
+.filter-tag i { cursor: pointer; font-size: 10px; }
+.filter-tag i:hover { color: #E24B4A; }
+
+/* CARD - cuisine badge */
+.card-cuisine {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: #f0f0f0; color: #555;
+    padding: 3px 8px; border-radius: 6px;
+    font-size: 11px; margin-bottom: 6px;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .filters-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+    .filters-grid { grid-template-columns: 1fr; }
+}
 
 /* MOBILE */
 @media (max-width: 768px) {
