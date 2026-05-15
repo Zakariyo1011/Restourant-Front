@@ -228,7 +228,7 @@
             <div class="card-img-wrap">
                 <img
                     v-if="r.image_path"
-                    :src="`https://restourant-production-6ae5.up.railway.app/storage/${r.image_path}`"
+                    :src="r.image_path"
                     :alt="r.name"
                     class="card-img"
                 />
