@@ -122,8 +122,8 @@
                                     <div class="restaurant-cell">
                                         <div class="restaurant-thumb">
                                             <img
-                                                v-if="r.image_path"
-                                                :src="r.image_path"
+                                                v-if="resolveImageUrl(r.image_path)"
+                                                :src="resolveImageUrl(r.image_path)"
                                                 alt=""
                                             />
                                             <i v-else class="fas fa-utensils"></i>
@@ -191,6 +191,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import api from '../axios'
+import { resolveImageUrl } from '../utils/imageUrl'
 
 const auth = useAuthStore()
 const router = useRouter()

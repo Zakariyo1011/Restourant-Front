@@ -254,6 +254,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import { resolveImageUrl } from '../utils/imageUrl'
 
 const props = defineProps({
     initial: { type: Object, default: () => ({}) },
@@ -285,6 +286,9 @@ const errors = ref({})
 watch(() => props.initial, (val) => {
     if (val && Object.keys(val).length) {
         form.value = { ...form.value, ...val }
+        if (val.image_path) {
+            previewUrl.value = resolveImageUrl(val.image_path)
+        }
     }
 }, { immediate: true })
 

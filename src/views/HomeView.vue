@@ -227,8 +227,8 @@
         >
             <div class="card-img-wrap">
                 <img
-                    v-if="r.image_path"
-                    :src="r.image_path"
+                    v-if="resolveImageUrl(r.image_path)"
+                    :src="resolveImageUrl(r.image_path)"
                     :alt="r.name"
                     class="card-img"
                 />
@@ -294,6 +294,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import api from '../axios'
+import { resolveImageUrl } from '../utils/imageUrl'
 
 const auth = useAuthStore()
 const restaurants = ref([])

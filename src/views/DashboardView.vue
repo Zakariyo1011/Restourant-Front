@@ -130,8 +130,9 @@
                 <div class="restaurant-body">
                     <div class="restaurant-img-wrap">
                         <img
-                             v-if="restaurant.image_path"
-  :src="restaurant.image_path"
+                            v-if="displayImageUrl && !imageLoadFailed"
+                            :src="displayImageUrl"
+                            @error="imageLoadFailed = true"
   class="restaurant-img"
   alt="Restoran rasmi"
                         />
@@ -269,12 +270,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import api from '../axios'
-import axios from 'axios'
 import RestaurantForm from '../components/RestaurantForm.vue'
+import { resolveImageUrl } from '../utils/imageUrl'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -290,6 +291,13 @@ const arijaSuccess = ref(false)
 const arijaError = ref('')
 const arijaLoading = ref(false)
 const editData = ref({})
+const imageLoadFailed = ref(false)
+
+const displayImageUrl = computed(() => resolveImageUrl(restaurant.value?.image_path))
+
+watch(() => restaurant.value?.image_path, () => {
+    imageLoadFailed.value = false
+})
 
 onMounted(async () => {
     await loadRestaurant()
@@ -306,13 +314,10 @@ const createRestaurant = async (form) => {
     formLoading.value = true
     formError.value = ''
     try {
-        const data = buildFormData(form)
-        const token = localStorage.getItem('token')
-        const res = await axios.post(`${import.meta.env.VITE_API_URL}/my-restaurant/update`, data, {
-    headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-})
+        const res = await api.post('/my-restaurant', buildFormData(form))
         restaurant.value = res.data
         showAddForm.value = false
+        imageLoadFailed.value = false
     } catch (e) {
         formError.value = e.response?.data?.message || 'Xato yuz berdi.'
     } finally {
@@ -328,6 +333,13 @@ const startEdit = () => {
         address: restaurant.value.location?.address,
         latitude: restaurant.value.location?.latitude,
         longitude: restaurant.value.location?.longitude,
+        cuisine_type: restaurant.value.cuisine_type,
+        country: restaurant.value.country,
+        city: restaurant.value.city,
+        price_range: restaurant.value.price_range,
+        website: restaurant.value.website,
+        instagram: restaurant.value.instagram,
+        image_path: restaurant.value.image_path,
     }
     showEditForm.value = true
 }
@@ -336,15 +348,14 @@ const updateRestaurant = async (form) => {
     formLoading.value = true
     formError.value = ''
     try {
-        const data = buildFormData(form)
-        const token = localStorage.getItem('token')
-        const res = await axios.post(`${import.meta.env.VITE_API_URL}/my-restaurant`, data, {
-            headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-        })
+        const res = await api.post('/my-restaurant/update', buildFormData(form))
         restaurant.value = res.data
         showEditForm.value = false
+        imageLoadFailed.value = false
     } catch (e) {
-        formError.value = e.response?.data?.message || 'Xato yuz berdi.'
+        const errors = e.response?.data?.errors
+        formError.value = e.response?.data?.message
+            || (errors ? Object.values(errors).flat().join(' ') : 'Xato yuz berdi.')
     } finally {
         formLoading.value = false
     }
@@ -379,8 +390,14 @@ const buildFormData = (form) => {
     data.append('phone', form.phone || '')
     data.append('description', form.description || '')
     data.append('address', form.address || '')
-    data.append('latitude', form.latitude || '')
-    data.append('longitude', form.longitude || '')
+    data.append('latitude', form.latitude ?? '')
+    data.append('longitude', form.longitude ?? '')
+    if (form.cuisine_type) data.append('cuisine_type', form.cuisine_type)
+    if (form.country) data.append('country', form.country)
+    if (form.city) data.append('city', form.city)
+    if (form.price_range) data.append('price_range', form.price_range)
+    if (form.website) data.append('website', form.website)
+    if (form.instagram) data.append('instagram', form.instagram)
     if (form.image) data.append('image', form.image)
     return data
 }

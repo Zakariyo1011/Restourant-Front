@@ -22,10 +22,11 @@
         <!-- Hero Image -->
         <div class="hero">
             <img
-                v-if="restaurant.image_path"
-                :src="`https://restourant-production-6ae5.up.railway.app/storage/${restaurant.image_path}`"
+                v-if="heroImageUrl && !heroImageFailed"
+                :src="heroImageUrl"
                 :alt="restaurant.name"
                 class="hero-img"
+                @error="heroImageFailed = true"
             />
             <div v-else class="hero-placeholder">
                 <i class="fas fa-utensils"></i>
@@ -161,9 +162,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../axios'
+import { resolveImageUrl } from '../utils/imageUrl'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
@@ -174,6 +176,13 @@ L.Icon.Default.mergeOptions({ iconUrl: markerIcon, shadowUrl: markerShadow })
 
 const route = useRoute()
 const restaurant = ref(null)
+const heroImageFailed = ref(false)
+
+const heroImageUrl = computed(() => resolveImageUrl(restaurant.value?.image_path))
+
+watch(() => restaurant.value?.image_path, () => {
+    heroImageFailed.value = false
+})
 
 onMounted(async () => {
     const res = await api.get(`/restaurants/${route.params.id}`)
