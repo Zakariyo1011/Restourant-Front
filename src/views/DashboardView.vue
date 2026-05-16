@@ -130,10 +130,10 @@
                 <div class="restaurant-body">
                     <div class="restaurant-img-wrap">
                         <img
-                            v-if="restaurant.image_path"
-                            :src="`https://restourant-production-6ae5.up.railway.app/storage/${restaurant.image_path}`"
-                            class="restaurant-img"
-                            alt="Restoran rasmi"
+                             v-if="restaurant.image_path"
+  :src="restaurant.image_path"
+  class="restaurant-img"
+  alt="Restoran rasmi"
                         />
                         <div v-else class="restaurant-no-img">
                             <i class="fas fa-camera"></i>
@@ -308,9 +308,9 @@ const createRestaurant = async (form) => {
     try {
         const data = buildFormData(form)
         const token = localStorage.getItem('token')
-        const res = await axios.post(`${import.meta.env.VITE_API_URL}/my-restaurant`, data, {
-            headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-        })
+        const res = await axios.post(`${import.meta.env.VITE_API_URL}/my-restaurant/update`, data, {
+    headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+})
         restaurant.value = res.data
         showAddForm.value = false
     } catch (e) {
