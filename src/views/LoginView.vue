@@ -112,7 +112,8 @@
 import { API_BASE } from '../utils/api'
 
 const loginWithGoogle = () => {
-    window.location.href = `${API_BASE}/auth/google/redirect`
+    const frontend = encodeURIComponent(window.location.origin)
+    window.location.href = `${API_BASE}/auth/google/redirect?frontend=${frontend}`
 }
 </script>
 
