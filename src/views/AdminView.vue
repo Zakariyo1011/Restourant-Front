@@ -7,9 +7,10 @@
                 <span class="brand-name">Restoran<span class="brand-accent">UZ</span></span>
             </div>
             <div class="nav-right">
+                <LanguageSwitcher />
                 <router-link to="/" class="nav-link">
                     <i class="fas fa-home"></i>
-                    <span>Bosh sahifa</span>
+                    <span>{{ $t('nav.home') }}</span>
                 </router-link>
                 <button @click="logout" class="logout-btn">
                     <i class="fas fa-sign-out-alt"></i>
@@ -192,6 +193,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import api from '../axios'
 import { resolveImageUrl } from '../utils/imageUrl'
+import LanguageSwitcher from '../components/LanguageSwitcher.vue'
 
 const auth = useAuthStore()
 const router = useRouter()

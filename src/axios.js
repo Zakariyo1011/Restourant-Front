@@ -15,6 +15,8 @@ api.interceptors.request.use(config => {
     if (token) {
         config.headers.Authorization = `Bearer ${token}`
     }
+    const locale = localStorage.getItem('locale') || 'uz'
+    config.headers['Accept-Language'] = locale
     if (config.data instanceof FormData) {
         delete config.headers['Content-Type']
     }

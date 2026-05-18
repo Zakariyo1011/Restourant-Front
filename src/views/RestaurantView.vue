@@ -13,6 +13,7 @@
                 <span class="brand-name">Restoran<span class="brand-accent">UZ</span></span>
             </div>
             <div class="nav-right">
+                <LanguageSwitcher />
                 <router-link to="/" class="home-link">
                     <i class="fas fa-home"></i>
                 </router-link>
@@ -166,6 +167,7 @@ import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '../axios'
 import { resolveImageUrl } from '../utils/imageUrl'
+import LanguageSwitcher from '../components/LanguageSwitcher.vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'

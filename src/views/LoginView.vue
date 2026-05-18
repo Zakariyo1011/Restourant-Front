@@ -49,18 +49,21 @@
 
         <!-- Right panel -->
         <div class="right-panel">
+            <div class="login-top-bar">
+                <LanguageSwitcher />
+            </div>
             <div class="login-box">
                 <router-link to="/" class="back-link">
                     <i class="fas fa-arrow-left"></i>
-                    Bosh sahifaga qaytish
+                    {{ $t('login.backHome') }}
                 </router-link>
 
                 <div class="login-header">
                     <div class="login-icon">
                         <i class="fas fa-user-circle"></i>
                     </div>
-                    <h2>Xush kelibsiz!</h2>
-                    <p>Restoran egasi sifatida kiring</p>
+                    <h2>{{ $t('login.welcome') }}</h2>
+                    <p>{{ $t('login.welcomeSub') }}</p>
                 </div>
 
                 <button @click="loginWithGoogle" class="google-btn">
@@ -72,7 +75,7 @@
                             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.47 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                         </svg>
                     </div>
-                    <span>Google orqali kirish</span>
+                    <span>{{ $t('login.googleBtn') }}</span>
                 </button>
 
                 <div class="divider">
@@ -110,6 +113,7 @@
 
 <script setup>
 import { API_BASE } from '../utils/api'
+import LanguageSwitcher from '../components/LanguageSwitcher.vue'
 
 const loginWithGoogle = () => {
     const frontend = encodeURIComponent(window.location.origin)
@@ -121,6 +125,12 @@ const loginWithGoogle = () => {
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
+.login-top-bar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 16px 24px 0;
+}
 
 .login-page {
     min-height: 100vh;

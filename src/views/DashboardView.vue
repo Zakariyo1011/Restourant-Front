@@ -7,13 +7,14 @@
                 <span class="brand-name">Restoran<span class="brand-accent">UZ</span></span>
             </div>
             <div class="nav-right">
+                <LanguageSwitcher />
                 <router-link to="/" class="nav-link">
                     <i class="fas fa-home"></i>
-                    <span>Bosh sahifa</span>
+                    <span>{{ $t('nav.home') }}</span>
                 </router-link>
                 <button @click="logout" class="logout-btn">
                     <i class="fas fa-sign-out-alt"></i>
-                    <span>Chiqish</span>
+                    <span>{{ $t('nav.logout') }}</span>
                 </button>
             </div>
         </nav>
@@ -26,13 +27,13 @@
                         <i class="fas fa-user"></i>
                     </div>
                     <div>
-                        <h2 class="welcome-title">Xush kelibsiz, {{ auth.user?.name?.split(' ')[0] }}!</h2>
-                        <p class="welcome-sub">Restoran panelingizga xush kelibsiz</p>
+                        <h2 class="welcome-title">{{ $t('dashboard.welcome', { name: auth.user?.name?.split(' ')[0] }) }}</h2>
+                        <p class="welcome-sub">{{ $t('dashboard.welcomeSub') }}</p>
                     </div>
                 </div>
                 <div class="role-badge">
                     <i class="fas fa-store"></i>
-                    Restoran egasi
+                    {{ $t('dashboard.ownerBadge') }}
                 </div>
             </div>
 
@@ -275,6 +276,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import api from '../axios'
 import RestaurantForm from '../components/RestaurantForm.vue'
+import LanguageSwitcher from '../components/LanguageSwitcher.vue'
 import { resolveImageUrl } from '../utils/imageUrl'
 
 const auth = useAuthStore()

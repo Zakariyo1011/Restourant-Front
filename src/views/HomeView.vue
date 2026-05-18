@@ -9,18 +9,19 @@
                 <span class="brand-name">Restoran<span class="brand-accent">UZ</span></span>
             </div>
             <div class="nav-right">
+                <LanguageSwitcher />
                 <router-link v-if="!auth.isLoggedIn" to="/login" class="btn-login">
                     <i class="fas fa-sign-in-alt"></i>
-                    <span>Kirish</span>
+                    <span>{{ $t('nav.login') }}</span>
                 </router-link>
                 <template v-else>
                     <router-link v-if="auth.isAdmin" to="/admin" class="btn-login">
                         <i class="fas fa-shield-alt"></i>
-                        <span>Admin</span>
+                        <span>{{ $t('nav.admin') }}</span>
                     </router-link>
                     <router-link v-else to="/dashboard" class="btn-login">
                         <i class="fas fa-th-large"></i>
-                        <span>Dashboard</span>
+                        <span>{{ $t('nav.dashboard') }}</span>
                     </router-link>
                 </template>
             </div>
@@ -31,51 +32,51 @@
             <div class="hero-content">
                 <div class="hero-badge">
                     <i class="fas fa-map-marker-alt"></i>
-                    O'zbekiston bo'ylab restoranlar
+                    {{ $t('home.badge') }}
                 </div>
                 <h1 class="hero-title">
-                    Eng yaxshi<br/>
-                    <span class="hero-highlight">restoranlarni</span><br/>
-                    toping
+                    {{ $t('home.title1') }}<br/>
+                    <span class="hero-highlight">{{ $t('home.title2') }}</span><br/>
+                    {{ $t('home.title3') }}
                 </h1>
-                <p class="hero-sub">Manzil, menyu, telefon — barchasi bir joyda</p>
+                <p class="hero-sub">{{ $t('home.subtitle') }}</p>
                 <div class="search-wrap">
                 
                 <!-- GPS tugmasi -->
                     <div class="gps-wrap">
                         <button @click="getUserLocation" :class="['gps-btn', { active: locationActive, loading: locationLoading }]">
                          <i :class="locationLoading ? 'fas fa-spinner fa-spin' : 'fas fa-location-arrow'"></i>
-                         <span>{{ locationLoading ? 'Aniqlanmoqda...' : locationActive ? 'Joylashuv aniqlandi' : 'Mening joylashuvim' }}</span>
+                         <span>{{ locationLoading ? $t('home.gpsLoading') : locationActive ? $t('home.gpsActive') : $t('home.gpsBtn') }}</span>
                      </button>
                      <span v-if="userLocation" class="gps-info">
                           <i class="fas fa-check-circle"></i>
-                         {{ nearbyCount }} ta restoran yaqin atrofda
+                         {{ $t('home.gpsFound', { count: nearbyCount }) }}
                      </span>
                     </div>
                     <div class="search-box">
                         <i class="fas fa-search search-icon"></i>
                         <input
                             v-model="search"
-                            placeholder="Restoran nomi yoki tavsifi..."
+                            :placeholder="$t('home.searchPlaceholder')"
                             class="search-input"
                         />
-                        <button class="search-btn">Qidirish</button>
+                        <button class="search-btn">{{ $t('home.searchBtn') }}</button>
                     </div>
                 </div>
                 <div class="hero-stats">
                     <div class="stat">
                         <strong>{{ restaurants.length }}+</strong>
-                        <span>Restoran</span>
+                        <span>{{ $t('home.statRestaurants') }}</span>
                     </div>
                     <div class="stat-divider"></div>
                     <div class="stat">
                         <strong>100%</strong>
-                        <span>Tekshirilgan</span>
+                        <span>{{ $t('home.statVerified') }}</span>
                     </div>
                     <div class="stat-divider"></div>
                     <div class="stat">
-                        <strong>Bepul</strong>
-                        <span>Xizmat</span>
+                        <strong>{{ $t('home.statFree') }}</strong>
+                        <span>{{ $t('home.statService') }}</span>
                     </div>
                 </div>
             </div>
@@ -91,39 +92,27 @@
     <!-- Filters -->
     <div class="filters-card">
         <div class="filters-header">
-            <h3><i class="fas fa-sliders-h"></i> Filtrlar</h3>
+            <h3><i class="fas fa-sliders-h"></i> {{ $t('home.filters') }}</h3>
             <button v-if="hasActiveFilters" @click="clearFilters" class="clear-btn">
-                <i class="fas fa-times"></i> Tozalash
+                <i class="fas fa-times"></i> {{ $t('home.clearFilters') }}
             </button>
         </div>
         <div class="filters-grid">
             <div class="filter-item">
                 <label class="filter-label">
-                    <i class="fas fa-utensils"></i> Taom yo'nalishi
+                    <i class="fas fa-utensils"></i> {{ $t('home.cuisine') }}
                 </label>
                 <select v-model="filters.cuisine_type" class="filter-select">
-                    <option value="">Barchasi</option>
-                    <option value="uzbek">O'zbek</option>
-                    <option value="tajik">Tojik</option>
-                    <option value="kazakh">Qozoq</option>
-                    <option value="kyrgyz">Qirg'iz</option>
-                    <option value="turkish">Turk</option>
-                    <option value="arabic">Arab</option>
-                    <option value="persian">Fors</option>
-                    <option value="afghan">Afghan</option>
-                    <option value="georgian">Gruzin</option>
-                    <option value="russian">Rus</option>
-                    <option value="european">Yevropa</option>
-                    <option value="asian">Osiyo</option>
-                    <option value="mixed">Aralash</option>
+                    <option value="">{{ $t('home.all') }}</option>
+                    <option v-for="key in cuisineKeys" :key="key" :value="key">{{ $t('cuisines.' + key) }}</option>
                 </select>
             </div>
             <div class="filter-item">
                 <label class="filter-label">
-                    <i class="fas fa-globe"></i> Mamlakat
+                    <i class="fas fa-globe"></i> {{ $t('home.country') }}
                 </label>
                 <select v-model="filters.country" class="filter-select">
-                    <option value="">Barchasi</option>
+                    <option value="">{{ $t('home.all') }}</option>
                     <option v-for="country in uniqueCountries" :key="country" :value="country">
                         {{ country }}
                     </option>
@@ -131,10 +120,10 @@
             </div>
             <div class="filter-item">
                 <label class="filter-label">
-                    <i class="fas fa-city"></i> Shahar
+                    <i class="fas fa-city"></i> {{ $t('home.city') }}
                 </label>
                 <select v-model="filters.city" class="filter-select">
-                    <option value="">Barchasi</option>
+                    <option value="">{{ $t('home.all') }}</option>
                     <option v-for="city in uniqueCities" :key="city" :value="city">
                         {{ city }}
                     </option>
@@ -142,7 +131,7 @@
             </div>
             <div class="filter-item">
                 <label class="filter-label">
-                    <i class="fas fa-tag"></i> Narx darajasi
+                    <i class="fas fa-tag"></i> {{ $t('home.price') }}
                 </label>
                 <div class="price-filter">
                     <button
@@ -158,7 +147,7 @@
         </div>
         <div v-if="hasActiveFilters" class="active-filters">
             <span v-if="filters.cuisine_type" class="filter-tag">
-                🍽 {{ cuisineLabels[filters.cuisine_type] }}
+                🍽 {{ $t('cuisines.' + filters.cuisine_type) }}
                 <i class="fas fa-times" @click="filters.cuisine_type = ''"></i>
             </span>
             <span v-if="filters.country" class="filter-tag">
@@ -181,15 +170,15 @@
         <div>
             <h2 class="section-title">
                 <i class="fas fa-fire section-icon"></i>
-                {{ locationActive ? 'Yaqin restoranlar' : 'Barcha restoranlar' }}
+                {{ locationActive ? $t('home.nearbyTitle') : $t('home.allTitle') }}
             </h2>
-            <p class="section-sub">{{ filtered.length }} ta restoran topildi</p>
+            <p class="section-sub">{{ $t('home.found', { count: filtered.length }) }}</p>
         </div>
         <div class="sort-wrap">
             <select v-model="sortBy" class="sort-select">
-                <option value="default">Saralash</option>
-                <option value="distance" v-if="locationActive">Masofaga ko'ra</option>
-                <option value="name">Nomiga ko'ra</option>
+                <option value="default">{{ $t('home.sortDefault') }}</option>
+                <option value="distance" v-if="locationActive">{{ $t('home.sortDistance') }}</option>
+                <option value="name">{{ $t('home.sortName') }}</option>
             </select>
         </div>
     </div>
@@ -213,8 +202,8 @@
         <div class="empty-icon">
             <i class="fas fa-store-slash"></i>
         </div>
-        <h3>Hech narsa topilmadi</h3>
-        <p>Boshqa so'z bilan qidiring</p>
+        <h3>{{ $t('home.emptyTitle') }}</h3>
+        <p>{{ $t('home.emptySub') }}</p>
     </div>
 
     <!-- Grid -->
@@ -236,7 +225,7 @@
                     <i class="fas fa-utensils"></i>
                 </div>
                 <div class="card-badge">
-                    <i class="fas fa-circle"></i> Ochiq
+                    <i class="fas fa-circle"></i> {{ $t('home.open') }}
                 </div>
                 <div class="distance-badge" v-if="r.distance">
                     <i class="fas fa-route"></i>
@@ -246,17 +235,17 @@
             <div class="card-body">
                 <h3 class="card-title">{{ r.name }}</h3>
                 <div class="card-cuisine" v-if="r.cuisine_type">
-                    🍽 {{ cuisineLabels[r.cuisine_type] || r.cuisine_type }}
+                    🍽 {{ r.cuisine_type ? $t('cuisines.' + r.cuisine_type) : '' }}
                 </div>
-                <p class="card-desc">{{ r.description || 'Tavsif yo\'q' }}</p>
+                <p class="card-desc">{{ r.description || $t('home.noDesc') }}</p>
                 <div class="card-info">
                     <span class="info-item">
                         <i class="fas fa-phone-alt"></i>
-                        {{ r.phone || 'Telefon yo\'q' }}
+                        {{ r.phone || $t('home.noPhone') }}
                     </span>
                     <span v-if="r.location" class="info-item">
                         <i class="fas fa-map-marker-alt"></i>
-                        {{ r.location.address || 'Manzil bor' }}
+                        {{ r.location.address || $t('home.hasAddress') }}
                     </span>
                     <span class="info-item" v-if="r.city || r.country">
                         <i class="fas fa-map-marker-alt"></i>
@@ -292,9 +281,13 @@
 <script setup>
 
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../stores/auth'
 import api from '../axios'
 import { resolveImageUrl } from '../utils/imageUrl'
+import LanguageSwitcher from '../components/LanguageSwitcher.vue'
+
+const { t } = useI18n()
 
 const auth = useAuthStore()
 const restaurants = ref([])
@@ -313,12 +306,7 @@ const filters = ref({
     price_range: '',
 })
 
-const cuisineLabels = {
-    uzbek: "O'zbek", tajik: 'Tojik', kazakh: 'Qozoq',
-    kyrgyz: "Qirg'iz", turkish: 'Turk', arabic: 'Arab',
-    persian: 'Fors', afghan: 'Afghan', georgian: 'Gruzin',
-    russian: 'Rus', european: 'Yevropa', asian: 'Osiyo', mixed: 'Aralash',
-}
+const cuisineKeys = ['uzbek', 'tajik', 'kazakh', 'kyrgyz', 'turkish', 'arabic', 'persian', 'afghan', 'georgian', 'russian', 'european', 'asian', 'mixed']
 
 const uniqueCountries = computed(() => {
     const countries = restaurants.value.map(r => r.country).filter(Boolean)
@@ -465,6 +453,7 @@ onMounted(async () => {
 }
 .brand-name { font-size: 18px; font-weight: 700; color: #1a1a1a; }
 .brand-accent { color: #1D9E75; }
+.nav-right { display: flex; align-items: center; gap: 10px; }
 .btn-login {
     display: flex; align-items: center; gap: 6px;
     padding: 9px 18px;
