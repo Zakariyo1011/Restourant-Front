@@ -109,8 +109,10 @@
 </template>
 
 <script setup>
+import { API_BASE } from '../utils/api'
+
 const loginWithGoogle = () => {
-    window.location.href = 'https://restourant-production-6ae5.up.railway.app/api/auth/google/redirect'
+    window.location.href = `${API_BASE}/auth/google/redirect`
 }
 </script>
 
