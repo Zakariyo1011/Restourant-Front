@@ -11,8 +11,8 @@
                 </div>
 
                 <div class="left-text">
-                    <h1>Restoraningizni<br/>dunyoga tanituring</h1>
-                    <p>Ming-minglab mijozlar sizi kutmoqda. Hoziroq ro'yxatdan o'ting va biznesingizni o'stirish!</p>
+                    <h1>{{ $t('login.title') }}</h1>
+                    <p>{{ $t('login.subtitle') }}</p>
                 </div>
 
                 <div class="features">
@@ -21,8 +21,8 @@
                             <i class="fas fa-chart-line"></i>
                         </div>
                         <div>
-                            <strong>Ko'proq mijoz</strong>
-                            <p>Saytimiz orqali yangi mijozlarga ering</p>
+                            <strong>{{ $t('login.feature1Title') }}</strong>
+                            <p>{{ $t('login.feature1Sub') }}</p>
                         </div>
                     </div>
                     <div class="feature-item">
@@ -30,8 +30,8 @@
                             <i class="fas fa-map-marked-alt"></i>
                         </div>
                         <div>
-                            <strong>Xaritada ko'rsating</strong>
-                            <p>Mijozlar sizni osonlik bilan topsin</p>
+                            <strong>{{ $t('login.feature2Title') }}</strong>
+                            <p>{{ $t('login.feature2Sub') }}</p>
                         </div>
                     </div>
                     <div class="feature-item">
@@ -39,8 +39,8 @@
                             <i class="fas fa-shield-alt"></i>
                         </div>
                         <div>
-                            <strong>Ishonchli platforma</strong>
-                            <p>Admin nazoratida sifatli xizmat</p>
+                            <strong>{{ $t('login.feature3Title') }}</strong>
+                            <p>{{ $t('login.feature3Sub') }}</p>
                         </div>
                     </div>
                 </div>
@@ -79,31 +79,31 @@
                 </button>
 
                 <div class="divider">
-                    <span>yoki</span>
+                    <span>{{ $t('login.or') }}</span>
                 </div>
 
                 <div class="info-box">
                     <i class="fas fa-info-circle"></i>
-                    <p>Faqat restoran egalari uchun. Oddiy foydalanuvchilar <router-link to="/">bosh sahifadan</router-link> restoranlarni ko'rishlari mumkin.</p>
+                    <p>{{ $t('login.infoTextPrefix') }} <router-link to="/">{{ $t('nav.home') }}</router-link> {{ $t('login.infoTextSuffix') }}</p>
                 </div>
 
                 <div class="steps">
-                    <p class="steps-title">Qanday ishlaydi?</p>
+                    <p class="steps-title">{{ $t('login.stepsTitle') }}</p>
                     <div class="step">
                         <div class="step-num">1</div>
-                        <span>Google akkauntingiz bilan kiring</span>
+                        <span>{{ $t('login.step1') }}</span>
                     </div>
                     <div class="step">
                         <div class="step-num">2</div>
-                        <span>Restoran ma'lumotlarini kiriting</span>
+                        <span>{{ $t('login.step2') }}</span>
                     </div>
                     <div class="step">
                         <div class="step-num">3</div>
-                        <span>Admin tasdiqlashini kuting</span>
+                        <span>{{ $t('login.step3') }}</span>
                     </div>
                     <div class="step">
                         <div class="step-num">4</div>
-                        <span>Mijozlarga ko'rining!</span>
+                        <span>{{ $t('login.step4') }}</span>
                     </div>
                 </div>
             </div>

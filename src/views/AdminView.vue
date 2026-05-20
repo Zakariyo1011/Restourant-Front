@@ -14,7 +14,7 @@
                 </router-link>
                 <button @click="logout" class="logout-btn">
                     <i class="fas fa-sign-out-alt"></i>
-                    <span>Chiqish</span>
+                    <span>{{ $t('admin.logout') }}</span>
                 </button>
             </div>
         </nav>
@@ -27,13 +27,13 @@
                         <i class="fas fa-shield-alt"></i>
                     </div>
                     <div>
-                        <h2 class="welcome-title">Admin Panel</h2>
-                        <p class="welcome-sub">Barcha restoranlarni boshqaring</p>
+                        <h2 class="welcome-title">{{ $t('admin.title') }}</h2>
+                        <p class="welcome-sub">{{ $t('admin.subtitle') }}</p>
                     </div>
                 </div>
                 <div class="admin-badge">
                     <i class="fas fa-crown"></i>
-                    Administrator
+                    {{ $t('admin.badge') }}
                 </div>
             </div>
 
@@ -44,7 +44,7 @@
                         <i class="fas fa-store"></i>
                     </div>
                     <div>
-                        <p class="stat-label">Jami restoranlar</p>
+                        <p class="stat-label">{{ $t('admin.totalRestaurants') }}</p>
                         <p class="stat-num">{{ restaurants.length }}</p>
                     </div>
                 </div>
@@ -53,7 +53,7 @@
                         <i class="fas fa-check-circle"></i>
                     </div>
                     <div>
-                        <p class="stat-label">Aktiv</p>
+                        <p class="stat-label">{{ $t('admin.activeLabel') }}</p>
                         <p class="stat-num green-text">{{ activeCount }}</p>
                     </div>
                 </div>
@@ -62,7 +62,7 @@
                         <i class="fas fa-times-circle"></i>
                     </div>
                     <div>
-                        <p class="stat-label">Inaktiv</p>
+                        <p class="stat-label">{{ $t('admin.inactiveLabel') }}</p>
                         <p class="stat-num red-text">{{ inactiveCount }}</p>
                     </div>
                 </div>
@@ -71,7 +71,7 @@
                         <i class="fas fa-clock"></i>
                     </div>
                     <div>
-                        <p class="stat-label">Kutmoqda</p>
+                        <p class="stat-label">{{ $t('admin.pending') }}</p>
                         <p class="stat-num orange-text">{{ inactiveCount }}</p>
                     </div>
                 </div>
@@ -82,24 +82,24 @@
                 <div class="table-header">
                     <div class="table-title">
                         <i class="fas fa-list"></i>
-                        Barcha restoranlar
+                        {{ $t('admin.allRestaurants') }}
                     </div>
                     <div class="table-search">
                         <i class="fas fa-search"></i>
-                        <input v-model="search" placeholder="Qidirish..." class="search-input" />
+                        <input v-model="search" :placeholder="$t('admin.search')" class="search-input" />
                     </div>
                 </div>
 
                 <!-- Loading -->
                 <div v-if="loading" class="loading-state">
                     <div class="spinner"></div>
-                    <p>Yuklanmoqda...</p>
+                    <p>{{ $t('admin.loading') }}</p>
                 </div>
 
                 <!-- Empty -->
                 <div v-else-if="filtered.length === 0" class="empty-state">
                     <i class="fas fa-store-slash"></i>
-                    <p>Restoranlar topilmadi</p>
+                    <p>{{ $t('admin.noRestaurants') }}</p>
                 </div>
 
                 <!-- Table content -->
@@ -107,13 +107,13 @@
                     <table class="table">
                         <thead>
                             <tr>
-                                <th>#</th>
-                                <th>Restoran</th>
-                                <th>Egasi</th>
-                                <th>Telefon</th>
-                                <th>Manzil</th>
-                                <th>Holat</th>
-                                <th>Amal</th>
+                                <th>{{ $t('admin.number') }}</th>
+                                <th>{{ $t('admin.restaurant') }}</th>
+                                <th>{{ $t('admin.owner') }}</th>
+                                <th>{{ $t('admin.phone') }}</th>
+                                <th>{{ $t('admin.address') }}</th>
+                                <th>{{ $t('admin.status') }}</th>
+                                <th>{{ $t('admin.action') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -156,7 +156,7 @@
                                 <td>
                                     <span :class="r.is_active ? 'badge-active' : 'badge-inactive'">
                                         <i :class="r.is_active ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
-                                        {{ r.is_active ? 'Aktiv' : 'Inaktiv' }}
+                                        {{ r.is_active ? $t('admin.activeLabel') : $t('admin.inactiveLabel') }}
                                     </span>
                                 </td>
                                 <td>
@@ -166,7 +166,7 @@
                                             :class="r.is_active ? 'btn-deactivate' : 'btn-activate'"
                                         >
                                             <i :class="r.is_active ? 'fas fa-ban' : 'fas fa-check'"></i>
-                                            {{ r.is_active ? 'Deaktiv' : 'Aktiv' }}
+                                            {{ r.is_active ? $t('admin.deactivate') : $t('admin.activate') }}
                                         </button>
                                         <router-link :to="`/restaurant/${r.id}`" class="btn-view">
                                             <i class="fas fa-eye"></i>
@@ -180,7 +180,7 @@
 
                 <!-- Footer -->
                 <div class="table-footer" v-if="!loading && filtered.length > 0">
-                    <p>Jami <strong>{{ filtered.length }}</strong> ta restoran</p>
+                    <p>{{ $t('admin.total') }} <strong>{{ filtered.length }}</strong> {{ $t('admin.allRestaurants').toLowerCase() }}</p>
                 </div>
             </div>
         </div>

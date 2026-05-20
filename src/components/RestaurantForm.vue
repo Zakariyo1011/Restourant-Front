@@ -8,12 +8,12 @@
                     <div class="upload-icon">
                         <i class="fas fa-camera"></i>
                     </div>
-                    <p class="upload-title">Rasm yuklash</p>
-                    <p class="upload-sub">PNG, JPG — max 2MB</p>
+                    <p class="upload-title">{{ $t('form.uploadTitle') }}</p>
+                    <p class="upload-sub">{{ $t('form.uploadSub') }}</p>
                 </div>
                 <div class="upload-overlay" v-if="previewUrl">
                     <i class="fas fa-camera"></i>
-                    <span>O'zgartirish</span>
+                    <span>{{ $t('form.changeImage') }}</span>
                 </div>
                 <input
                     ref="fileInput"
@@ -31,12 +31,12 @@
             <div class="field-group">
                 <label class="field-label">
                     <i class="fas fa-utensils"></i>
-                    Restoran nomi
+                    {{ $t('form.name') }}
                     <span class="required">*</span>
                 </label>
                 <input
                     v-model="form.name"
-                    placeholder="Masalan: Milliy taomlar"
+                    :placeholder="$t('form.namePlaceholder')"
                     class="field-input"
                     :class="{ error: errors.name }"
                 />
@@ -47,14 +47,14 @@
             <div class="field-group">
                 <label class="field-label">
                     <i class="fas fa-phone-alt"></i>
-                    Telefon raqami
+                    {{ $t('form.phone') }}
                     <span class="required">*</span>
                 </label>
                 <div class="input-with-prefix">
                     <span class="prefix">+998</span>
                     <input
                         v-model="form.phone"
-                        placeholder="90 123 45 67"
+                    :placeholder="$t('form.phonePlaceholder')"
                         class="field-input prefix-input"
                         :class="{ error: errors.phone }"
                     />
@@ -66,26 +66,26 @@
             <div class="field-group">
                 <label class="field-label">
                     <i class="fas fa-align-left"></i>
-                    Tavsif
+                    {{ $t('form.description') }}
                 </label>
                 <textarea
                     v-model="form.description"
-                    placeholder="Restoran haqida qisqacha ma'lumot..."
+                    :placeholder="$t('form.descriptionPlaceholder')"
                     class="field-textarea"
                     rows="3"
                 ></textarea>
-                <p class="field-hint">{{ form.description?.length || 0 }} / 500 belgi</p>
+                <p class="field-hint">{{ form.description?.length || 0 }} / {{ $t('form.descriptionHint', { count: 500 }) }}</p>
             </div>
 
             <!-- Manzil -->
             <div class="field-group">
                 <label class="field-label">
                     <i class="fas fa-map-marker-alt"></i>
-                    Manzil
+                    {{ $t('form.address') }}
                 </label>
                 <input
                     v-model="form.address"
-                    placeholder="Toshkent, Chilonzor tumani, ..."
+                    :placeholder="$t('form.addressPlaceholder')"
                     class="field-input"
                 />
             </div>
@@ -94,23 +94,23 @@
 <div class="field-group">
     <label class="field-label">
         <i class="fas fa-utensils"></i>
-        Taom yo'nalishi
+        {{ $t('form.cuisine') }}
     </label>
     <select v-model="form.cuisine_type" class="field-input">
-        <option value="">Tanlang...</option>
-        <option value="uzbek">O'zbek</option>
-        <option value="tajik">Tojik</option>
-        <option value="kazakh">Qozoq</option>
-        <option value="kyrgyz">Qirg'iz</option>
-        <option value="turkish">Turk</option>
-        <option value="arabic">Arab</option>
-        <option value="persian">Fors</option>
-        <option value="afghan">Afghan</option>
-        <option value="georgian">Gruzin</option>
-        <option value="russian">Rus</option>
-        <option value="european">Yevropa</option>
-        <option value="asian">Osiyo</option>
-        <option value="mixed">Aralash</option>
+        <option value="">{{ $t('form.cuisineSelect') }}</option>
+        <option value="uzbek">{{ $t('cuisines.uzbek') }}</option>
+        <option value="tajik">{{ $t('cuisines.tajik') }}</option>
+        <option value="kazakh">{{ $t('cuisines.kazakh') }}</option>
+        <option value="kyrgyz">{{ $t('cuisines.kyrgyz') }}</option>
+        <option value="turkish">{{ $t('cuisines.turkish') }}</option>
+        <option value="arabic">{{ $t('cuisines.arabic') }}</option>
+        <option value="persian">{{ $t('cuisines.persian') }}</option>
+        <option value="afghan">{{ $t('cuisines.afghan') }}</option>
+        <option value="georgian">{{ $t('cuisines.georgian') }}</option>
+        <option value="russian">{{ $t('cuisines.russian') }}</option>
+        <option value="european">{{ $t('cuisines.european') }}</option>
+        <option value="asian">{{ $t('cuisines.asian') }}</option>
+        <option value="mixed">{{ $t('cuisines.mixed') }}</option>
     </select>
 </div>
 
@@ -119,22 +119,22 @@
     <div class="field-group">
         <label class="field-label">
             <i class="fas fa-globe"></i>
-            Mamlakat
+            {{ $t('form.country') }}
         </label>
         <input
             v-model="form.country"
-            placeholder="Masalan: United Kingdom"
+            :placeholder="$t('form.countryPlaceholder')"
             class="field-input"
         />
     </div>
     <div class="field-group">
         <label class="field-label">
             <i class="fas fa-city"></i>
-            Shahar
+            {{ $t('form.city') }}
         </label>
         <input
             v-model="form.city"
-            placeholder="Masalan: London"
+            :placeholder="$t('form.cityPlaceholder')"
             class="field-input"
         />
     </div>
@@ -144,7 +144,7 @@
 <div class="field-group">
     <label class="field-label">
         <i class="fas fa-tag"></i>
-        Narx darajasi
+        {{ $t('form.price') }}
     </label>
     <div class="price-options">
         <label
@@ -163,24 +163,24 @@
     <div class="field-group">
         <label class="field-label">
             <i class="fas fa-globe"></i>
-            Veb-sayt
+            {{ $t('form.website') }}
         </label>
         <input
             v-model="form.website"
-            placeholder="https://example.com"
+            :placeholder="$t('form.websitePlaceholder')"
             class="field-input"
         />
     </div>
     <div class="field-group">
         <label class="field-label">
             <i class="fab fa-instagram"></i>
-            Instagram
+            {{ $t('form.instagram') }}
         </label>
         <div class="input-with-prefix">
             <span class="prefix">@</span>
             <input
                 v-model="form.instagram"
-                placeholder="restoran_nomi"
+                :placeholder="$t('form.instagramPlaceholder')"
                 class="field-input prefix-input"
             />
         </div>
@@ -216,13 +216,13 @@
                 </div>
                 <div class="coord-hint">
                     <i class="fas fa-info-circle"></i>
-                    <span>Google Maps dan koordinatalarni olish uchun: </span>
+                    <span>{{ $t('form.mapHint') }}</span>
                     <a href="https://maps.google.com" target="_blank" class="coord-link">
                         maps.google.com <i class="fas fa-external-link-alt"></i>
                     </a>
                 </div>
                 <p v-if="errors.latitude || errors.longitude" class="field-error">
-                    Koordinatalarni to'g'ri kiriting
+                    {{ $t('form.mapValidation') }}
                 </p>
             </div>
 
@@ -241,11 +241,11 @@
                 >
                     <i v-if="loading" class="fas fa-spinner fa-spin"></i>
                     <i v-else class="fas fa-save"></i>
-                    {{ loading ? 'Saqlanmoqda...' : 'Saqlash' }}
+                    {{ loading ? $t('form.saving') : $t('form.save') }}
                 </button>
                 <button @click="$emit('cancel')" class="btn-cancel">
                     <i class="fas fa-times"></i>
-                    Bekor qilish
+                    {{ $t('form.cancel') }}
                 </button>
             </div>
         </div>
@@ -254,6 +254,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { resolveImageUrl } from '../utils/imageUrl'
 
 const props = defineProps({
@@ -263,6 +264,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['submit', 'cancel'])
+
+const { t } = useI18n()
 
 const form = ref({
     name: '',
@@ -302,8 +305,8 @@ const onFileChange = (e) => {
 
 const validate = () => {
     errors.value = {}
-    if (!form.value.name?.trim()) errors.value.name = 'Restoran nomi majburiy'
-    if (!form.value.phone?.trim()) errors.value.phone = 'Telefon raqami majburiy'
+    if (!form.value.name?.trim()) errors.value.name = t('form.validation.name')
+    if (!form.value.phone?.trim()) errors.value.phone = t('form.validation.phone')
     if (!form.value.latitude) errors.value.latitude = true
     if (!form.value.longitude) errors.value.longitude = true
     return Object.keys(errors.value).length === 0

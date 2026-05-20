@@ -257,7 +257,7 @@
                     </span>
                 </div>
                 <div class="card-cta">
-                    <span>Batafsil ko'rish</span>
+                    <span>{{ $t('home.viewDetails') }}</span>
                     <i class="fas fa-arrow-right"></i>
                 </div>
             </div>
@@ -270,9 +270,9 @@
             <div class="footer-inner">
                 <div class="footer-brand">
                     <i class="fas fa-utensils"></i>
-                    <span>RestoranUZ</span>
+                    <span>{{ $t('footer.brand') }}</span>
                 </div>
-                <p class="footer-copy">© 2026 RestoranUZ. Barcha huquqlar himoyalangan.</p>
+                <p class="footer-copy">{{ $t('footer.copy') }}</p>
             </div>
         </footer>
     </div>

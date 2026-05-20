@@ -27,9 +27,9 @@
                         <i class="fas fa-user"></i>
                     </div>
                     <div>
-                        <h2 class="welcome-title">{{ $t('dashboard.welcome', { name: auth.user?.name?.split(' ')[0] }) }}</h2>
-                        <p class="welcome-sub">{{ $t('dashboard.welcomeSub') }}</p>
-                    </div>
+                            <h2><i class="fas fa-store"></i> {{ $t('dashboard.myRestaurant') }}</h2>
+                                <i class="fas fa-edit"></i> {{ $t('dashboard.edit') }}
+                                <i class="fas fa-trash-alt"></i> {{ $t('dashboard.delete') }}
                 </div>
                 <div class="role-badge">
                     <i class="fas fa-store"></i>
@@ -44,13 +44,13 @@
                         <i class="fas fa-exclamation-triangle"></i>
                     </div>
                     <div>
-                        <h3 class="alert-title">Restorningiz hali aktiv emas</h3>
-                        <p class="alert-sub">Admin tasdiqlashini kuting yoki ariza yuboring</p>
+                            <h3 class="alert-title">{{ $t('dashboard.inactiveTitle') }}</h3>
+                            <p class="alert-sub">{{ $t('dashboard.inactiveSub') }}</p>
                     </div>
                 </div>
                 <button @click="showArijaForm = true" class="ariza-btn">
                     <i class="fas fa-paper-plane"></i>
-                    Ariza yuborish
+                        {{ $t('dashboard.sendApp') }}
                 </button>
             </div>
 
@@ -61,8 +61,8 @@
                         <i class="fas fa-store"></i>
                     </div>
                     <div>
-                        <p class="stat-label">Restoran holati</p>
-                        <p class="stat-value">{{ restaurant.is_active ? 'Aktiv' : 'Inaktiv' }}</p>
+                        <p class="stat-label">{{ $t('dashboard.status') }}</p>
+                        <p class="stat-value">{{ restaurant.is_active ? $t('dashboard.active') : $t('dashboard.inactive') }}</p>
                     </div>
                 </div>
                 <div class="stat-card blue">
@@ -70,7 +70,7 @@
                         <i class="fas fa-phone-alt"></i>
                     </div>
                     <div>
-                        <p class="stat-label">Telefon</p>
+                        <p class="stat-label">{{ $t('dashboard.phone') }}</p>
                         <p class="stat-value">{{ restaurant.phone || '—' }}</p>
                     </div>
                 </div>
@@ -79,7 +79,7 @@
                         <i class="fas fa-map-marker-alt"></i>
                     </div>
                     <div>
-                        <p class="stat-label">Manzil</p>
+                        <p class="stat-label">{{ $t('dashboard.address') }}</p>
                         <p class="stat-value">{{ restaurant.location?.address || '—' }}</p>
                     </div>
                 </div>
@@ -90,18 +90,18 @@
                 <div class="empty-illustration">
                     <i class="fas fa-store-slash"></i>
                 </div>
-                <h3>Hali restoran qo'shilmagan</h3>
-                <p>Restoran qo'shib, minglab mijozlarga o'zingizni tanituring!</p>
+                    <h3>{{ $t('dashboard.noRestaurant') }}</h3>
+                    <p>{{ $t('dashboard.noRestaurantSub') }}</p>
                 <button @click="showAddForm = true" class="btn-primary">
                     <i class="fas fa-plus"></i>
-                    Restoran qo'shish
+                        {{ $t('dashboard.addRestaurant') }}
                 </button>
             </div>
 
             <!-- Add form -->
             <div v-if="showAddForm" class="form-card">
                 <div class="form-card-header">
-                    <h2><i class="fas fa-plus-circle"></i> Yangi restoran qo'shish</h2>
+                    <h2><i class="fas fa-plus-circle"></i> {{ $t('dashboard.addTitle') }}</h2>
                     <button @click="showAddForm = false" class="close-btn">
                         <i class="fas fa-times"></i>
                     </button>
@@ -117,13 +117,13 @@
             <!-- Restaurant card -->
             <div v-if="restaurant && !showEditForm" class="restaurant-card">
                 <div class="restaurant-card-header">
-                    <h2><i class="fas fa-store"></i> Mening restoranim</h2>
+                    <h2><i class="fas fa-store"></i> {{ $t('dashboard.myRestaurant') }}</h2>
                     <div class="action-btns">
                         <button @click="startEdit" class="btn-edit">
-                            <i class="fas fa-edit"></i> Tahrirlash
+                            <i class="fas fa-edit"></i> {{ $t('dashboard.edit') }}
                         </button>
                         <button @click="showDeleteConfirm = true" class="btn-delete">
-                            <i class="fas fa-trash-alt"></i> O'chirish
+                            <i class="fas fa-trash-alt"></i> {{ $t('dashboard.delete') }}
                         </button>
                     </div>
                 </div>
@@ -135,46 +135,46 @@
                             :src="displayImageUrl"
                             @error="imageLoadFailed = true"
   class="restaurant-img"
-  alt="Restoran rasmi"
+    :alt="$t('dashboard.imageAlt')"
                         />
                         <div v-else class="restaurant-no-img">
                             <i class="fas fa-camera"></i>
-                            <span>Rasm yo'q</span>
+                            <span>{{ $t('dashboard.noImage') }}</span>
                         </div>
                         <div class="img-status" :class="restaurant.is_active ? 'active' : 'inactive'">
                             <i class="fas fa-circle"></i>
-                            {{ restaurant.is_active ? 'Aktiv' : 'Inaktiv' }}
+                            {{ restaurant.is_active ? $t('dashboard.active') : $t('dashboard.inactive') }}
                         </div>
                     </div>
 
                     <div class="restaurant-details">
                         <div class="detail-item">
                             <span class="detail-label">
-                                <i class="fas fa-utensils"></i> Nomi
+                                <i class="fas fa-utensils"></i> {{ $t('dashboard.name') }}
                             </span>
                             <span class="detail-value">{{ restaurant.name }}</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">
-                                <i class="fas fa-phone-alt"></i> Telefon
+                                <i class="fas fa-phone-alt"></i> {{ $t('dashboard.phone') }}
                             </span>
                             <span class="detail-value">{{ restaurant.phone || '—' }}</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">
-                                <i class="fas fa-align-left"></i> Tavsif
+                                    <i class="fas fa-align-left"></i> {{ $t('dashboard.description') }}
                             </span>
-                            <span class="detail-value desc">{{ restaurant.description || '—' }}</span>
+                                    <span class="detail-value desc">{{ restaurant.description || '—' }}</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">
-                                <i class="fas fa-map-marker-alt"></i> Manzil
+                                <i class="fas fa-map-marker-alt"></i> {{ $t('dashboard.address') }}
                             </span>
                             <span class="detail-value">{{ restaurant.location?.address || '—' }}</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">
-                                <i class="fas fa-globe"></i> Koordinatalar
+                                <i class="fas fa-globe"></i> {{ $t('dashboard.coordinates') }}
                             </span>
                             <span class="detail-value coords" v-if="restaurant.location">
                                 {{ restaurant.location.latitude }}, {{ restaurant.location.longitude }}
@@ -187,7 +187,7 @@
                 <div class="restaurant-card-footer">
                     <router-link :to="`/restaurant/${restaurant.id}`" class="view-link">
                         <i class="fas fa-eye"></i>
-                        Saytda qanday ko'rinishini ko'rish
+                        {{ $t('dashboard.viewOnSite') }}
                     </router-link>
                 </div>
             </div>
@@ -195,7 +195,7 @@
             <!-- Edit form -->
             <div v-if="showEditForm" class="form-card">
                 <div class="form-card-header">
-                    <h2><i class="fas fa-edit"></i> Restoran tahrirlash</h2>
+                    <h2><i class="fas fa-edit"></i> {{ $t('dashboard.editTitle') }}</h2>
                     <button @click="showEditForm = false" class="close-btn">
                         <i class="fas fa-times"></i>
                     </button>
@@ -221,22 +221,22 @@
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                <h3 class="modal-title">Aktivlashtirish uchun ariza</h3>
-                <p class="modal-sub">Telefon raqamingizni kiriting, admin siz bilan bog'lanadi</p>
+                <h3 class="modal-title">{{ $t('dashboard.appTitle') }}</h3>
+                <p class="modal-sub">{{ $t('dashboard.appSub') }}</p>
                 <div class="modal-input-wrap">
                     <i class="fas fa-phone-alt modal-input-icon"></i>
-                    <input v-model="arijaPhone" placeholder="+998 90 123 45 67" class="modal-input" />
+                    <input v-model="arijaPhone" :placeholder="$t('dashboard.phone')" class="modal-input" />
                 </div>
                 <div class="modal-btns">
                     <button @click="sendArija" class="btn-primary" :disabled="arijaLoading">
                         <i class="fas fa-paper-plane"></i>
-                        {{ arijaLoading ? 'Yuborilmoqda...' : 'Yuborish' }}
+                        {{ arijaLoading ? $t('dashboard.appSending') : $t('dashboard.appSend') }}
                     </button>
-                    <button @click="showArijaForm = false" class="btn-ghost">Bekor</button>
+                    <button @click="showArijaForm = false" class="btn-ghost">{{ $t('dashboard.cancel') }}</button>
                 </div>
                 <div v-if="arijaSuccess" class="alert-success">
                     <i class="fas fa-check-circle"></i>
-                    Ariza muvaffaqiyatli yuborildi! Admin tez orada bog'lanadi.
+                    {{ $t('dashboard.appSuccess') }}
                 </div>
                 <div v-if="arijaError" class="alert-error">
                     <i class="fas fa-times-circle"></i>
@@ -256,14 +256,14 @@
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                <h3 class="modal-title">O'chirishni tasdiqlang</h3>
-                <p class="modal-sub">Restoran ma'lumotlari butunlay o'chib ketadi. Bu amalni qaytarib bo'lmaydi!</p>
+                <h3 class="modal-title">{{ $t('dashboard.deleteConfirm') }}</h3>
+                <p class="modal-sub">{{ $t('dashboard.deleteWarn') }}</p>
                 <div class="modal-btns">
                     <button @click="deleteRestaurant" class="btn-danger">
                         <i class="fas fa-trash-alt"></i>
-                        Ha, o'chirish
+                        {{ $t('dashboard.deleteYes') }}
                     </button>
-                    <button @click="showDeleteConfirm = false" class="btn-ghost">Bekor</button>
+                    <button @click="showDeleteConfirm = false" class="btn-ghost">{{ $t('dashboard.cancel') }}</button>
                 </div>
             </div>
         </div>
