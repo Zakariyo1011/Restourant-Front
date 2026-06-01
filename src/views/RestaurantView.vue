@@ -27,8 +27,18 @@
                 :src="heroImageUrl"
                 :alt="restaurant.name"
                 class="hero-img"
+                @click="openLightbox"
                 @error="heroImageFailed = true"
             />
+            <div v-else-if="galleryImages.length" class="hero-fallback">
+                <img
+                    :src="galleryImages[0].url || galleryImages[0]"
+                    :alt="restaurant.name"
+                    class="hero-img"
+                    @click="openLightbox"
+                    @error="heroImageFailed = true"
+                />
+            </div>
             <div v-else class="hero-placeholder">
                 <i class="fas fa-utensils"></i>
             </div>
@@ -37,6 +47,47 @@
                     <i class="fas fa-circle"></i> {{ t('restaurant.open') }}
                 </div>
             </div>
+        </div>
+
+        <div v-if="galleryImages.length > 1" class="image-gallery">
+            <div
+                v-for="(img, idx) in galleryImages"
+                :key="img.id || idx"
+                class="gallery-thumb"
+                :class="{ active: selectedImageIndex === idx }"
+                @click="selectedImageIndex = idx; heroImageFailed = false; openLightbox()"
+            >
+                <img :src="resolveImageUrl(img.url || img)" :alt="restaurant.name" />
+            </div>
+        </div>
+
+        <div v-if="lightboxOpen" class="lightbox-overlay" @click.self="closeLightbox">
+            <button class="lightbox-close" @click.prevent="closeLightbox">
+                <i class="fas fa-times"></i>
+            </button>
+            <button v-if="galleryImages.length > 1" class="lightbox-nav prev" @click.prevent="prevImage">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="lightbox-content">
+                <div class="lightbox-main">
+                    <img :src="heroImageUrl" :alt="restaurant.name" class="lightbox-img" />
+                </div>
+                <div v-if="galleryImages.length > 1" class="lightbox-thumbs">
+                    <div
+                        v-for="(img, idx) in galleryImages"
+                        :key="img.id || idx"
+                        class="lightbox-thumb"
+                        :class="{ active: selectedImageIndex === idx }"
+                        @click.prevent="selectedImageIndex = idx"
+                    >
+                        <img :src="resolveImageUrl(img.url || img)" :alt="restaurant.name" />
+                    </div>
+                </div>
+                <p class="lightbox-caption">{{ selectedImageIndex + 1 }} / {{ galleryImages.length }}</p>
+            </div>
+            <button v-if="galleryImages.length > 1" class="lightbox-nav next" @click.prevent="nextImage">
+                <i class="fas fa-chevron-right"></i>
+            </button>
         </div>
 
         <!-- Content -->
@@ -180,9 +231,62 @@ L.Icon.Default.mergeOptions({ iconUrl: markerIcon, shadowUrl: markerShadow })
 const route = useRoute()
 const restaurant = ref(null)
 const heroImageFailed = ref(false)
+const selectedImageIndex = ref(0)
 const { t } = useI18n()
 
-const heroImageUrl = computed(() => resolveImageUrl(restaurant.value?.image_path))
+const galleryImages = computed(() => {
+    if (!restaurant.value) return []
+    if (Array.isArray(restaurant.value.images) && restaurant.value.images.length) {
+        return restaurant.value.images.map(image => (typeof image === 'string' ? { url: image } : image))
+    }
+    if (Array.isArray(restaurant.value.image_paths) && restaurant.value.image_paths.length) {
+        return restaurant.value.image_paths.map(url => ({ url }))
+    }
+    if (restaurant.value.image_path) {
+        return [{ url: restaurant.value.image_path }]
+    }
+    return []
+})
+
+const lightboxOpen = ref(false)
+
+const openLightbox = () => {
+    if (!galleryImages.value.length) return
+    lightboxOpen.value = true
+    try { document.body.style.overflow = 'hidden' } catch (e) {}
+}
+
+const closeLightbox = () => {
+    lightboxOpen.value = false
+    try { document.body.style.overflow = '' } catch (e) {}
+}
+
+const prevImage = () => {
+    if (!galleryImages.value.length) return
+    selectedImageIndex.value = (selectedImageIndex.value - 1 + galleryImages.value.length) % galleryImages.value.length
+}
+
+const nextImage = () => {
+    if (!galleryImages.value.length) return
+    selectedImageIndex.value = (selectedImageIndex.value + 1) % galleryImages.value.length
+}
+
+watch(galleryImages, (images) => {
+    if (!images.length) {
+        selectedImageIndex.value = 0
+        return
+    }
+    if (selectedImageIndex.value >= images.length) {
+        selectedImageIndex.value = 0
+    }
+})
+
+const heroImageUrl = computed(() => {
+    const images = galleryImages.value
+    if (!images.length) return null
+    const selected = images[selectedImageIndex.value] || images[0]
+    return resolveImageUrl(selected.url || selected)
+})
 
 watch(() => restaurant.value?.image_path, () => {
     heroImageFailed.value = false
@@ -250,8 +354,8 @@ onMounted(async () => {
 .home-link:hover { background: #E1F5EE; color: #1D9E75; }
 
 /* HERO */
-.hero { position: relative; height: 320px; overflow: hidden; }
-.hero-img { width: 100%; height: 100%; object-fit: cover; }
+.hero { position: relative; height: 320px; overflow: hidden; width: 100%; max-width: 800px; margin: 0 auto; border-radius: 24px; }
+.hero-img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
 .hero-placeholder {
     width: 100%; height: 100%;
     background: linear-gradient(135deg, #1D9E75, #0F6E56);
@@ -266,10 +370,105 @@ onMounted(async () => {
 .hero-badge {
     display: inline-flex; align-items: center; gap: 6px;
     background: #1D9E75; color: white;
-    padding: 6px 14px; border-radius: 20px;
-    font-size: 13px; font-weight: 500;
+    padding: 10px 18px; border-radius: 25px;
+    font-size: 15px; font-weight: 500;
 }
 .hero-badge .fa-circle { font-size: 7px; }
+
+.hero-fallback { width: 100%; height: 100%; overflow: hidden; }
+.image-gallery {
+    display: flex;
+    gap: 10px;
+    padding: 12px 20px;
+    overflow-x: auto;
+    max-width: 800px;
+    margin: 0 auto 16px;
+}
+.gallery-thumb {
+    width: 84px; height: 84px;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    cursor: pointer;
+    flex: 0 0 auto;
+}
+.gallery-thumb.active { border-color: #1D9E75; }
+.gallery-thumb img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.2s;
+}
+.gallery-thumb:hover img { transform: scale(1.04); }
+
+.lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 500;
+}
+.lightbox-content {
+    position: relative;
+    max-width: 100%;
+    max-height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.lightbox-img {
+    width: 100%;
+    max-width: 100%;
+    max-height: 85vh;
+    border-radius: 18px;
+    object-fit: contain;
+    box-shadow: 0 18px 60px rgba(0,0,0,0.45);
+}
+.lightbox-caption {
+    margin-top: 12px;
+    color: white;
+    font-size: 13px;
+    opacity: 0.85;
+}
+.lightbox-thumbs {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    overflow-x: auto;
+    padding: 6px 4px;
+    width: 100%;
+    justify-content: center;
+}
+.lightbox-thumb {
+    width: 72px; height: 72px; border-radius: 8px; overflow: hidden;
+    border: 2px solid transparent; flex: 0 0 auto; cursor: pointer;
+}
+.lightbox-thumb.active { border-color: rgba(255,255,255,0.9); }
+.lightbox-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.lightbox-main { width: 100%; display: flex; align-items: center; justify-content: center; }
+.lightbox-close,
+.lightbox-nav {
+    position: absolute;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0,0,0,0.55);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.lightbox-close:hover,
+.lightbox-nav:hover { background: rgba(0,0,0,0.75); }
+.lightbox-close { top: 20px; right: 20px; }
+.lightbox-nav.prev { left: 20px; }
+.lightbox-nav.next { right: 20px; }
 
 /* CONTENT */
 .content-wrap {
@@ -390,6 +589,21 @@ onMounted(async () => {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* MOBILE */
+@media (max-width: 700px) {
+    .hero { height: 220px; }
+    .image-gallery { gap: 8px; padding: 10px 14px; }
+    .gallery-thumb { width: 64px; height: 64px; border-radius: 12px; }
+    .hero-overlay { padding: 14px 16px; }
+    .hero-badge { padding: 6px 12px; font-size: 12px; }
+    .content-wrap { padding: 0 14px 34px; }
+    .lightbox-overlay { padding: 0; }
+    .lightbox-content { padding: 16px; }
+    .lightbox-img { max-height: 72vh; border-radius: 14px; }
+    .lightbox-close { top: 12px; right: 12px; width: 38px; height: 38px; }
+    .lightbox-nav.prev { left: 12px; }
+    .lightbox-nav.next { right: 12px; }
+}
+
 @media (max-width: 600px) {
     .hero { height: 240px; }
     .stats-row { grid-template-columns: 1fr; }
