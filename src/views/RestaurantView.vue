@@ -344,6 +344,7 @@ onMounted(async () => {
 }
 .brand-name { font-size: 16px; font-weight: 700; color: #1a1a1a; }
 .brand-accent { color: #1D9E75; }
+.nav-right { display: flex; align-items: center; gap: 10px; }
 .home-link {
     width: 36px; height: 36px;
     background: #f0f0f0; border-radius: 8px;
