@@ -3,11 +3,14 @@
         <!-- Left panel -->
         <div class="left-panel">
             <div class="left-content">
-                <div class="brand">
-                    <div class="brand-icon">
-                        <i class="fas fa-utensils"></i>
+                <div class="left-top-row">
+                    <div class="brand">
+                        <div class="brand-icon">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        <span class="brand-name">Restoran<span class="brand-accent">UZ</span></span>
                     </div>
-                    <span class="brand-name">Restoran<span class="brand-accent">UZ</span></span>
+                    <LanguageSwitcher />
                 </div>
 
                 <div class="left-text">
@@ -49,9 +52,6 @@
 
         <!-- Right panel -->
         <div class="right-panel">
-            <div class="login-top-bar">
-                <LanguageSwitcher />
-            </div>
             <div class="login-box">
                 <router-link to="/" class="back-link">
                     <i class="fas fa-arrow-left"></i>
@@ -126,10 +126,19 @@ const loginWithGoogle = () => {
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-.login-top-bar {
+.left-top-row {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    right: 24px;
     display: flex;
-    justify-content: flex-end;
-    padding: 16px 24px 0;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+}
+
+.left-top-row .brand {
+    margin-bottom: 0;
 }
 
 .login-page {
@@ -165,7 +174,7 @@ const loginWithGoogle = () => {
     border-radius: 50%;
     bottom: -80px; left: -60px;
 }
-.left-content { position: relative; z-index: 2; max-width: 420px; }
+.left-content { position: relative; z-index: 2; max-width: 420px; padding-top: 92px; }
 
 .brand {
     display: flex; align-items: center; gap: 10px;
@@ -214,11 +223,9 @@ const loginWithGoogle = () => {
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
     padding: 40px 32px;
 }
-
-.login-box { width: 100%; max-width: 380px; }
-
 .back-link {
     display: inline-flex; align-items: center; gap: 6px;
     color: #666; font-size: 13px; text-decoration: none;
@@ -294,6 +301,13 @@ const loginWithGoogle = () => {
     .left-panel { padding: 32px 24px; }
     .left-text h1 { font-size: 26px; }
     .features { display: none; }
-    .right-panel { width: 100%; padding: 32px 24px; }
+    .right-panel { width: 100%; padding: 32px 24px; position: relative; }
+    .left-top-row {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding-right: 0;
+    }
+    .login-box { padding-top: 0; }
 }
 </style>

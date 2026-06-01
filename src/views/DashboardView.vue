@@ -28,14 +28,13 @@
                     </div>
                     <div>
                             <h2><i class="fas fa-store"></i> {{ $t('dashboard.myRestaurant') }}</h2>
-                                <i class="fas fa-edit"></i> {{ $t('dashboard.edit') }}
-                                <i class="fas fa-trash-alt"></i> {{ $t('dashboard.delete') }}
-                </div>
-                <div class="role-badge">
+                     </div>
+                 </div>
+                 <div class="role-badge">
                     <i class="fas fa-store"></i>
                     {{ $t('dashboard.ownerBadge') }}
                 </div>
-            </div>
+             </div>
 
             <!-- Inactive warning -->
             <div v-if="!auth.isActive" class="alert-card">
@@ -130,13 +129,25 @@
 
                 <div class="restaurant-body">
                     <div class="restaurant-img-wrap">
-                        <img
-                            v-if="displayImageUrl && !imageLoadFailed"
-                            :src="displayImageUrl"
-                            @error="imageLoadFailed = true"
-  class="restaurant-img"
-    :alt="$t('dashboard.imageAlt')"
-                        />
+                                                <img
+                                                        v-if="firstImage && !imageLoadFailed"
+                                                        :src="firstImage"
+                                                        @error="imageLoadFailed = true"
+    class="restaurant-img"
+        :alt="$t('dashboard.imageAlt')"
+                                                />
+                                                <div v-if="galleryImages.length > 1" class="gallery-thumbs">
+                                                    <div v-for="(img, idx) in galleryImages" :key="img.id || idx" class="thumb-wrap">
+                                                        <img :src="resolveImageUrl(img.url || img)" class="thumb" />
+                                                        <button
+                                                            class="thumb-delete"
+                                                            :disabled="deletingImageId === (img.id || idx)"
+                                                            @click.prevent="deleteImage(img)"
+                                                        >
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
                         <div v-else class="restaurant-no-img">
                             <i class="fas fa-camera"></i>
                             <span>{{ $t('dashboard.noImage') }}</span>
@@ -295,7 +306,20 @@ const arijaLoading = ref(false)
 const editData = ref({})
 const imageLoadFailed = ref(false)
 
-const displayImageUrl = computed(() => resolveImageUrl(restaurant.value?.image_path))
+const galleryImages = computed(() => {
+    if (!restaurant.value) return []
+    // backend may provide `images` array or `image_paths` or single `image_path`
+    if (Array.isArray(restaurant.value.images) && restaurant.value.images.length) {
+        return restaurant.value.images.map(image => typeof image === 'string' ? { url: image, id: image } : image)
+    }
+    if (Array.isArray(restaurant.value.image_paths) && restaurant.value.image_paths.length) {
+        return restaurant.value.image_paths.map(url => ({ url, id: url }))
+    }
+    if (restaurant.value.image_path) return [restaurant.value.image_path]
+    return []
+})
+
+const firstImage = computed(() => galleryImages.value.length ? resolveImageUrl(galleryImages.value[0].url || galleryImages.value[0]) : null)
 
 watch(() => restaurant.value?.image_path, () => {
     imageLoadFailed.value = false
@@ -309,7 +333,25 @@ const loadRestaurant = async () => {
     try {
         const res = await api.get('/my-restaurant')
         restaurant.value = res.data
-    } catch {}
+    } catch (e) {
+        console.error('Failed to load restaurant:', e.response?.data || e.message || e)
+        restaurant.value = null
+    }
+}
+
+const deletingImageId = ref(null)
+
+const deleteImage = async (image) => {
+    if (!image?.id) return
+    deletingImageId.value = image.id
+    try {
+        await api.delete(`/my-restaurant/images/${image.id}`)
+        restaurant.value.images = (restaurant.value.images || []).filter(img => img.id !== image.id)
+    } catch (e) {
+        console.error('Image delete failed', e)
+    } finally {
+        deletingImageId.value = null
+    }
 }
 
 const createRestaurant = async (form) => {
@@ -322,6 +364,9 @@ const createRestaurant = async (form) => {
         imageLoadFailed.value = false
     } catch (e) {
         formError.value = e.response?.data?.message || 'Xato yuz berdi.'
+        if (e.response?.status === 409) {
+            await loadRestaurant()
+        }
     } finally {
         formLoading.value = false
     }
@@ -400,7 +445,12 @@ const buildFormData = (form) => {
     if (form.price_range) data.append('price_range', form.price_range)
     if (form.website) data.append('website', form.website)
     if (form.instagram) data.append('instagram', form.instagram)
-    if (form.image) data.append('image', form.image)
+    // support multiple images from the form: `images` array or legacy single `image`
+    if (form.images && Array.isArray(form.images) && form.images.length) {
+        form.images.forEach((f) => data.append('images[]', f))
+    } else if (form.image) {
+        data.append('image', form.image)
+    }
     return data
 }
 
@@ -616,6 +666,29 @@ const logout = async () => {
 .img-status.active { background: #1D9E75; color: white; }
 .img-status.inactive { background: #E24B4A; color: white; }
 .img-status .fa-circle { font-size: 7px; }
+
+.gallery-thumbs { display: flex; gap: 8px; margin-top: 12px; }
+.gallery-thumbs .thumb { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; }
+
+.thumb-wrap { position: relative; }
+.thumb-delete {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 26px;
+    height: 26px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.55);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.thumb-delete:hover { background: rgba(0,0,0,0.75); }
+.thumb-delete:disabled { cursor: not-allowed; opacity: 0.6; }
 
 .restaurant-details { display: flex; flex-direction: column; gap: 0; }
 .detail-item {

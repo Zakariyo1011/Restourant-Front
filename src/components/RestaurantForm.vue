@@ -2,8 +2,11 @@
     <div class="form-wrap">
         <!-- Rasm yuklash -->
         <div class="image-section">
-            <div class="image-upload" @click="$refs.fileInput.click()">
-                <img v-if="previewUrl" :src="previewUrl" class="preview-img" />
+                <div class="image-upload" @click="$refs.fileInput.click()">
+                <div v-if="previews && previews.length" class="previews">
+                    <img v-for="(p, i) in previews" :key="i" :src="p" class="preview-thumb" />
+                </div>
+                <img v-else-if="previewUrl" :src="previewUrl" class="preview-img" />
                 <div v-else class="upload-placeholder">
                     <div class="upload-icon">
                         <i class="fas fa-camera"></i>
@@ -19,6 +22,7 @@
                     ref="fileInput"
                     type="file"
                     accept="image/*"
+                    multiple
                     @change="onFileChange"
                     style="display:none"
                 />
@@ -274,7 +278,7 @@ const form = ref({
     address: '',
     latitude: '',
     longitude: '',
-    image: null,
+    images: [],
     cuisine_type: '',
     country: '',
     city: '',
@@ -284,6 +288,7 @@ const form = ref({
 })
 
 const previewUrl = ref(null)
+const previews = ref([])
 const errors = ref({})
 
 watch(() => props.initial, (val) => {
@@ -292,14 +297,22 @@ watch(() => props.initial, (val) => {
         if (val.image_path) {
             previewUrl.value = resolveImageUrl(val.image_path)
         }
+        // support array of images from backend: `images` or `image_paths`
+        if (val.images && Array.isArray(val.images) && val.images.length) {
+            previews.value = val.images.map(p => resolveImageUrl(p))
+        } else if (val.image_paths && Array.isArray(val.image_paths) && val.image_paths.length) {
+            previews.value = val.image_paths.map(p => resolveImageUrl(p))
+        }
     }
 }, { immediate: true })
 
 const onFileChange = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-        form.value.image = file
-        previewUrl.value = URL.createObjectURL(file)
+    const files = Array.from(e.target.files || [])
+    if (files.length) {
+        form.value.images = files
+        previews.value = files.map(f => URL.createObjectURL(f))
+        // keep previewUrl for single-file compatibility
+        previewUrl.value = previews.value[0] || null
     }
 }
 
@@ -361,6 +374,9 @@ const submit = () => {
 }
 .image-upload:hover .upload-overlay { opacity: 1; }
 .upload-overlay i { font-size: 24px; }
+
+.previews { display: flex; gap: 8px; align-items: center; padding: 8px; }
+.preview-thumb { width: 100px; height: 100px; object-fit: cover; border-radius: 8px; }
 
 /* FIELDS */
 .fields { display: flex; flex-direction: column; gap: 18px; }

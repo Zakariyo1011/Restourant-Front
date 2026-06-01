@@ -5,7 +5,7 @@
             <div class="nav-left">
                 <button @click="$router.back()" class="back-btn">
                     <i class="fas fa-arrow-left"></i>
-                    <span>Orqaga</span>
+                    <span>{{ t('nav.back') }}</span>
                 </button>
             </div>
             <div class="nav-brand">
@@ -34,7 +34,7 @@
             </div>
             <div class="hero-overlay">
                 <div class="hero-badge">
-                    <i class="fas fa-circle"></i> Ochiq
+                    <i class="fas fa-circle"></i> {{ t('restaurant.open') }}
                 </div>
             </div>
         </div>
@@ -55,7 +55,7 @@
                     </div>
                     <a :href="`tel:${restaurant.phone}`" class="call-btn">
                         <i class="fas fa-phone-alt"></i>
-                        <span>Qo'ng'iroq</span>
+                        <span>{{ t('restaurant.call') }}</span>
                     </a>
                 </div>
 
@@ -66,22 +66,22 @@
                     <div class="stat-box">
                         <i class="fas fa-phone-alt stat-icon green"></i>
                         <div>
-                            <p class="stat-label">Telefon</p>
+                                <p class="stat-label">{{ t('restaurant.phone') }}</p>
                             <p class="stat-value">{{ restaurant.phone || '—' }}</p>
                         </div>
                     </div>
                     <div class="stat-box">
                         <i class="fas fa-map-marker-alt stat-icon blue"></i>
                         <div>
-                            <p class="stat-label">Manzil</p>
+                                <p class="stat-label">{{ t('restaurant.address') }}</p>
                             <p class="stat-value">{{ restaurant.location?.address || '—' }}</p>
                         </div>
                     </div>
                     <div class="stat-box">
                         <i class="fas fa-check-circle stat-icon orange"></i>
                         <div>
-                            <p class="stat-label">Holat</p>
-                            <p class="stat-value">Tasdiqlangan</p>
+                            <p class="stat-label">{{ t('restaurant.status') }}</p>
+                            <p class="stat-value">{{ t('restaurant.verified') }}</p>
                         </div>
                     </div>
                 </div>
@@ -91,7 +91,7 @@
             <div class="section-card" v-if="restaurant.description">
                 <h2 class="section-title">
                     <i class="fas fa-info-circle"></i>
-                    Restoran haqida
+                    {{ t('restaurant.about') }}
                 </h2>
                 <p class="description">{{ restaurant.description }}</p>
             </div>
@@ -100,20 +100,20 @@
             <div class="section-card" v-if="restaurant.location">
                 <h2 class="section-title">
                     <i class="fas fa-map-marked-alt"></i>
-                    Joylashuv
+                    {{ t('restaurant.location') }}
                 </h2>
                 <div class="map-wrap">
                     <div id="map"></div>
                 </div>
                 <div class="map-footer">
                     <i class="fas fa-map-marker-alt"></i>
-                    <span>{{ restaurant.location.address || 'Manzil ko\'rsatilmagan' }}</span>
+                    <span>{{ restaurant.location.address || t('restaurant.noAddress') }}</span>
                     
                      <a :href="`https://www.google.com/maps?q=${restaurant.location.latitude},${restaurant.location.longitude}`"
    target="_blank"
    class="maps-link"
 >
-                        Google Maps da ochish <i class="fas fa-external-link-alt"></i>
+                        {{ t('restaurant.mapLink') }} <i class="fas fa-external-link-alt"></i>
                     </a>
                 </div>
             </div>
@@ -122,7 +122,7 @@
             <div class="section-card contact-card">
                 <h2 class="section-title">
                     <i class="fas fa-headset"></i>
-                    Bog'lanish
+                    {{ t('restaurant.contact') }}
                 </h2>
                 <div class="contact-grid">
                     <a :href="`tel:${restaurant.phone}`" class="contact-item phone">
@@ -130,7 +130,7 @@
                             <i class="fas fa-phone-alt"></i>
                         </div>
                         <div>
-                            <p class="contact-label">Telefon</p>
+                            <p class="contact-label">{{ t('restaurant.phone') }}</p>
                             <p class="contact-value">{{ restaurant.phone }}</p>
                         </div>
                         <i class="fas fa-chevron-right contact-arrow"></i>
@@ -145,8 +145,8 @@
                             <i class="fas fa-directions"></i>
                         </div>
                         <div>
-                            <p class="contact-label">Yo'l olish</p>
-                            <p class="contact-value">Xaritada ko'rish</p>
+                            <p class="contact-label">{{ t('restaurant.directions') }}</p>
+                            <p class="contact-value">{{ t('restaurant.viewOnMap') }}</p>
                         </div>
                         <i class="fas fa-chevron-right contact-arrow"></i>
                     </a>
@@ -158,12 +158,13 @@
     <!-- Loading -->
     <div v-else class="loading-page">
         <div class="spinner"></div>
-        <p>Yuklanmoqda...</p>
+        <p>{{ t('restaurant.loading') }}</p>
     </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import api from '../axios'
 import { resolveImageUrl } from '../utils/imageUrl'
@@ -179,6 +180,7 @@ L.Icon.Default.mergeOptions({ iconUrl: markerIcon, shadowUrl: markerShadow })
 const route = useRoute()
 const restaurant = ref(null)
 const heroImageFailed = ref(false)
+const { t } = useI18n()
 
 const heroImageUrl = computed(() => resolveImageUrl(restaurant.value?.image_path))
 

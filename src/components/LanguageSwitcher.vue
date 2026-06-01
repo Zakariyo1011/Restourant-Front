@@ -34,6 +34,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { LOCALE_OPTIONS, setLocale } from '../i18n'
+import api from '../axios'
 
 const { locale } = useI18n()
 const open = ref(false)
@@ -45,6 +46,11 @@ const current = computed(() =>
 
 function pick(code) {
     setLocale(code)
+    if (localStorage.getItem('token')) {
+        api.post('/me/locale', { locale: code }).catch(() => {
+            // keep the UI change even if backend save fails
+        })
+    }
     open.value = false
     window.location.reload()
 }
