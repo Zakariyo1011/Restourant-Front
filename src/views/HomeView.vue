@@ -216,8 +216,8 @@
         >
             <div class="card-img-wrap">
                 <img
-                    v-if="resolveImageUrl(r.image_path)"
-                    :src="resolveImageUrl(r.image_path)"
+                    v-if="resolveImageUrl(getRestaurantImageUrl(r))"
+                    :src="resolveImageUrl(getRestaurantImageUrl(r))"
                     :alt="r.name"
                     class="card-img"
                 />
@@ -410,6 +410,13 @@ const togglePrice = (price) => {
 
 const clearFilters = () => {
     filters.value = { cuisine_type: '', country: '', city: '', price_range: '' }
+}
+
+const getRestaurantImageUrl = (restaurant) => {
+    if (restaurant?.images?.length > 0) {
+        return restaurant.images[0].url
+    }
+    return restaurant.image_path || null
 }
 
 onMounted(async () => {
