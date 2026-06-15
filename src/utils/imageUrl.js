@@ -13,6 +13,13 @@ export function resolveImageUrl(path) {
     }
 
     const clean = trimmed.replace(/^\/+/, '')
+
+    // Agar rasm yo'li allaqachon 'storage/' bilan boshlansa, qaytadan qo'shmaymiz
+    if (clean.startsWith('storage/')) {
+        return `${API_ORIGIN}/${clean}`
+    }
+
+    // Aks holda (masalan, shunchaki 'restaurants/abc.jpg' bo'lsa) qo'shib beramiz
     return `${API_ORIGIN}/storage/${clean}`
 }
 
