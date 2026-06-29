@@ -77,6 +77,192 @@
                 </div>
             </div>
 
+            <!-- Google Import Card -->
+            <div class="import-card">
+                <div class="import-header">
+                    <div class="import-title">
+                        <i class="fab fa-google" style="color:#4285F4"></i>
+                        Google Places Import
+                    </div>
+                    <button class="import-toggle-btn" @click="importOpen = !importOpen">
+                        <i :class="importOpen ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
+                    </button>
+                </div>
+
+                <div v-if="importOpen" class="import-body">
+                    <!-- Row 1: Davlat -->
+                    <div class="import-row">
+                        <label class="import-label">
+                            <i class="fas fa-flag"></i> Davlat
+                        </label>
+                        <div class="searchable-select" v-click-outside="() => countryDropOpen = false">
+                            <div class="ss-input-wrap" @click="countryDropOpen = !countryDropOpen">
+                                <i class="fas fa-search ss-icon"></i>
+                                <input
+                                    v-model="countrySearch"
+                                    class="ss-input"
+                                    placeholder="Davlat qidiring yoki tanlang..."
+                                    @input="countryDropOpen = true"
+                                    @focus="countryDropOpen = true"
+                                    @keydown.enter.prevent="applyTypedCountry"
+                                />
+                                <span v-if="importForm.country" class="ss-selected-badge">
+                                    {{ importForm.country }}
+                                    <i class="fas fa-times" @click.stop="importForm.country = ''; countrySearch = ''"></i>
+                                </span>
+                            </div>
+                            <div v-if="countryDropOpen && filteredCountries.length" class="ss-dropdown">
+                                <div
+                                    v-for="c in filteredCountries"
+                                    :key="c.code"
+                                    class="ss-option"
+                                    :class="{ active: importForm.country === c.name }"
+                                    @click="selectCountry(c)"
+                                >
+                                    <span class="ss-flag">{{ c.flag }}</span>
+                                    {{ c.name }}
+                                </div>
+                            </div>
+                            <div
+                                v-else-if="countryDropOpen && countrySearch.trim()"
+                                class="ss-dropdown"
+                            >
+                                <div class="ss-option" @click="applyTypedCountry">
+                                    <i class="fas fa-plus" style="color:#1D9E75"></i>
+                                    "{{ countrySearch.trim() }}" dan foydalanish
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Shaharlar (multi) -->
+                    <div class="import-row">
+                        <label class="import-label">
+                            <i class="fas fa-city"></i> Shaharlar (bir nechta tanlash mumkin)
+                        </label>
+                        <div class="searchable-select" v-click-outside="() => cityDropOpen = false">
+                            <div class="ss-input-wrap">
+                                <i class="fas fa-search ss-icon"></i>
+                                <div class="ss-tags">
+                                    <span v-for="city in importForm.cities" :key="city" class="ss-tag">
+                                        {{ city }}
+                                        <i class="fas fa-times" @click="removeCity(city)"></i>
+                                    </span>
+                                </div>
+                                <input
+                                    v-model="citySearch"
+                                    class="ss-input"
+                                    :placeholder="importForm.country ? 'Shahar qidiring...' : 'Avval davlat tanlang'"
+                                    :disabled="!importForm.country"
+                                    @input="cityDropOpen = true"
+                                    @focus="cityDropOpen = true"
+                                    @keydown.enter.prevent="addTypedCity"
+                                />
+                                <button
+                                    v-if="citySearch.trim()"
+                                    class="ss-add-btn"
+                                    type="button"
+                                    @click="addTypedCity"
+                                >
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <div v-if="cityDropOpen && filteredCities.length" class="ss-dropdown">
+                                <div
+                                    v-for="city in filteredCities"
+                                    :key="city"
+                                    class="ss-option"
+                                    :class="{ active: importForm.cities.includes(city) }"
+                                    @click="toggleCity(city)"
+                                >
+                                    <i class="fas fa-check" v-if="importForm.cities.includes(city)" style="color:#1D9E75;margin-right:6px"></i>
+                                    {{ city }}
+                                </div>
+                            </div>
+                            <div
+                                v-else-if="cityDropOpen && citySearch.trim()"
+                                class="ss-dropdown"
+                            >
+                                <div class="ss-option" @click="addTypedCity">
+                                    <i class="fas fa-plus" style="color:#1D9E75"></i>
+                                    "{{ citySearch.trim() }}" shahrini qo'shish
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Ovqat yo'nalishi -->
+                    <div class="import-row">
+                        <label class="import-label">
+                            <i class="fas fa-utensils"></i> Ovqat yo'nalishi (ixtiyoriy)
+                        </label>
+                        <div class="searchable-select" v-click-outside="() => cuisineDropOpen = false">
+                            <div class="ss-input-wrap" @click="cuisineDropOpen = !cuisineDropOpen">
+                                <i class="fas fa-search ss-icon"></i>
+                                <input
+                                    v-model="cuisineSearch"
+                                    class="ss-input"
+                                    placeholder="Masalan: sushi, pizza, osh..."
+                                    @input="cuisineDropOpen = true"
+                                    @focus="cuisineDropOpen = true"
+                                />
+                                <span v-if="importForm.cuisine" class="ss-selected-badge">
+                                    {{ importForm.cuisine }}
+                                    <i class="fas fa-times" @click.stop="importForm.cuisine = ''; cuisineSearch = ''"></i>
+                                </span>
+                            </div>
+                            <div v-if="cuisineDropOpen && filteredCuisines.length" class="ss-dropdown">
+                                <div
+                                    v-for="cu in filteredCuisines"
+                                    :key="cu"
+                                    class="ss-option"
+                                    :class="{ active: importForm.cuisine === cu }"
+                                    @click="selectCuisine(cu)"
+                                >
+                                    {{ cu }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 4: Max soni -->
+                    <div class="import-row">
+                        <label class="import-label">
+                            <i class="fas fa-hashtag"></i> Maksimal restoran soni
+                        </label>
+                        <input
+                            v-model.number="importForm.max"
+                            type="number" min="1" max="200"
+                            class="import-number-input"
+                            placeholder="60"
+                        />
+                    </div>
+
+                    <!-- Natija xabar -->
+                    <div v-if="importResult" class="import-result" :class="importResult.type">
+                        <i :class="importResult.type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'"></i>
+                        {{ importResult.message }}
+                        <div v-if="importResult.errors?.length" class="import-errors">
+                            <p v-for="e in importResult.errors" :key="e" class="import-error-item">⚠ {{ e }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Boshlash tugmasi -->
+                    <button
+                        class="import-run-btn"
+                        :disabled="importing || !importForm.country || !importForm.cities.length"
+                        @click="runImport"
+                    >
+                        <span v-if="importing">
+                            <i class="fas fa-spinner fa-spin"></i> Import qilinmoqda...
+                        </span>
+                        <span v-else>
+                            <i class="fas fa-cloud-download-alt"></i> Import boshlash
+                        </span>
+                    </button>
+                </div>
+            </div>
+
             <!-- Table -->
             <div class="table-card">
                 <div class="table-header">
@@ -201,6 +387,239 @@ const restaurants = ref([])
 const loading = ref(true)
 const search = ref('')
 
+// ─── Google Import ma'lumotlari ───────────────────────────────────────────────
+
+const COUNTRIES = [
+    { code: 'UZ', name: 'Uzbekistan',    flag: '🇺🇿', cities: ['Tashkent','Samarkand','Bukhara','Namangan','Andijan','Fergana','Nukus','Qarshi','Termiz','Urgench'] },
+    { code: 'KZ', name: 'Kazakhstan',    flag: '🇰🇿', cities: ['Almaty','Astana','Shymkent','Karaganda','Aktobe','Taraz','Pavlodar','Oskemen','Semey','Atyrau'] },
+    { code: 'KG', name: 'Kyrgyzstan',    flag: '🇰🇬', cities: ['Bishkek','Osh','Jalal-Abad','Karakol','Tokmok','Naryn','Talas','Batken','Balykchy','Uzgen'] },
+    { code: 'TJ', name: 'Tajikistan',    flag: '🇹🇯', cities: ['Dushanbe','Khujand','Kulob','Qurghonteppa','Istaravshan','Konibodom','Tursunzoda','Panjakent','Vahdat','Hisor'] },
+    { code: 'TM', name: 'Turkmenistan',  flag: '🇹🇲', cities: ['Ashgabat','Turkmenbashi','Dashoguz','Mary','Turkmenabat','Balkanabat','Bayramaly','Tejen','Serdar','Yoloten'] },
+    { code: 'RU', name: 'Russia',        flag: '🇷🇺', cities: ['Moscow','Saint Petersburg','Novosibirsk','Yekaterinburg','Kazan','Nizhny Novgorod','Chelyabinsk','Samara','Omsk','Ufa'] },
+    { code: 'TR', name: 'Turkey',        flag: '🇹🇷', cities: ['Istanbul','Ankara','Izmir','Bursa','Antalya','Konya','Adana','Gaziantep','Mersin','Kayseri'] },
+    { code: 'AE', name: 'UAE',           flag: '🇦🇪', cities: ['Dubai','Abu Dhabi','Sharjah','Ajman','Ras Al Khaimah','Fujairah','Al Ain','Umm Al Quwain'] },
+    { code: 'US', name: 'USA',           flag: '🇺🇸', cities: ['New York','Los Angeles','Chicago','Houston','Phoenix','Philadelphia','San Antonio','San Diego','Dallas','San Jose'] },
+    { code: 'DE', name: 'Germany',       flag: '🇩🇪', cities: ['Berlin','Hamburg','Munich','Cologne','Frankfurt','Stuttgart','Düsseldorf','Leipzig','Dortmund','Essen'] },
+    { code: 'FR', name: 'France',        flag: '🇫🇷', cities: ['Paris','Marseille','Lyon','Toulouse','Nice','Nantes','Strasbourg','Montpellier','Bordeaux','Lille'] },
+    { code: 'GB', name: 'United Kingdom',flag: '🇬🇧', cities: ['London','Birmingham','Manchester','Glasgow','Leeds','Liverpool','Edinburgh','Bristol','Cardiff','Sheffield'] },
+    { code: 'CN', name: 'China',         flag: '🇨🇳', cities: ['Beijing','Shanghai','Guangzhou','Shenzhen','Chengdu','Chongqing','Tianjin','Wuhan','Xian','Hangzhou'] },
+    { code: 'JP', name: 'Japan',         flag: '🇯🇵', cities: ['Tokyo','Osaka','Yokohama','Nagoya','Sapporo','Fukuoka','Kobe','Kyoto','Kawasaki','Saitama'] },
+    { code: 'KR', name: 'South Korea',   flag: '🇰🇷', cities: ['Seoul','Busan','Incheon','Daegu','Daejeon','Gwangju','Suwon','Ulsan','Changwon','Goyang'] },
+    { code: 'IN', name: 'India',         flag: '🇮🇳', cities: ['Mumbai','Delhi','Bangalore','Hyderabad','Chennai','Kolkata','Pune','Ahmedabad','Jaipur','Surat'] },
+    { code: 'IT', name: 'Italy',         flag: '🇮🇹', cities: ['Rome','Milan','Naples','Turin','Palermo','Genoa','Bologna','Florence','Bari','Catania'] },
+    { code: 'ES', name: 'Spain',         flag: '🇪🇸', cities: ['Madrid','Barcelona','Valencia','Seville','Zaragoza','Málaga','Murcia','Palma','Las Palmas','Bilbao'] },
+    { code: 'SA', name: 'Saudi Arabia',  flag: '🇸🇦', cities: ['Riyadh','Jeddah','Mecca','Medina','Dammam','Khobar','Tabuk','Buraidah','Hail','Najran'] },
+    { code: 'MY', name: 'Malaysia',      flag: '🇲🇾', cities: ['Kuala Lumpur','George Town','Johor Bahru','Ipoh','Shah Alam','Malacca City','Kota Kinabalu','Kuching'] },
+    { code: 'PK', name: 'Pakistan',      flag: '🇵🇰', cities: ['Karachi','Lahore','Islamabad','Rawalpindi','Faisalabad','Multan','Peshawar','Quetta','Sialkot','Gujranwala'] },
+]
+
+const COUNTRY_ALIASES = {
+    'united kingdom': ['uk', 'england', 'britain', 'great britain'],
+    'united states': ['usa', 'us', 'america'],
+    'united arab emirates': ['uae'],
+    'south korea': ['korea', 'republic of korea'],
+}
+
+const CUISINES = [
+    "Osh (Plov)", "Lag'mon", 'Manti', 'Shashlik', "Sho'rva", 'Samsa', 'Dimlama',
+    'Sushi', 'Pizza', 'Burger', 'Kebab', 'Shawarma', 'Ramen', 'Pasta', 'Steak',
+    'Sushi & Rolls', 'BBQ', 'Seafood', 'Vegan', 'Halal', 'Indian', 'Chinese',
+    'Korean', 'Thai', 'Mexican', 'American', 'Italian', 'French', 'Mediterranean',
+    'Georgian', 'Azerbaijani', 'Armenian', 'Japanese', 'Vietnamese', 'Turkish',
+]
+
+// ─── Import state ─────────────────────────────────────────────────────────────
+
+const importOpen      = ref(false)
+const importing       = ref(false)
+const importResult    = ref(null)
+
+const importForm = ref({
+    country: '',
+    cities:  [],
+    cuisine: '',
+    max:     60,
+})
+
+const countryDropOpen = ref(false)
+const cityDropOpen    = ref(false)
+const cuisineDropOpen = ref(false)
+const countrySearch   = ref('')
+const citySearch      = ref('')
+const cuisineSearch   = ref('')
+
+const normalizeText = (value) =>
+    String(value || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+
+const toTitleCase = (value) =>
+    String(value || '')
+        .trim()
+        .split(/\s+/)
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ')
+
+const getCountryAliases = (countryName) => {
+    const normalizedName = normalizeText(countryName)
+    return COUNTRY_ALIASES[normalizedName] || []
+}
+
+const findCountryByQuery = (rawQuery) => {
+    const q = normalizeText(rawQuery)
+    if (!q) return null
+
+    const direct = COUNTRIES.find(c => {
+        const name = normalizeText(c.name)
+        const code = normalizeText(c.code)
+        const aliases = getCountryAliases(c.name)
+        return name === q || code === q || aliases.includes(q)
+    })
+    if (direct) return direct
+
+    return COUNTRIES.find(c => {
+        const name = normalizeText(c.name)
+        const code = normalizeText(c.code)
+        const aliases = getCountryAliases(c.name)
+        return name.includes(q) || code.includes(q) || aliases.some(a => a.includes(q))
+    }) || null
+}
+
+const filteredCountries = computed(() => {
+    const q = normalizeText(countrySearch.value)
+    if (!q) return COUNTRIES
+    return COUNTRIES.filter(c => {
+        const name = normalizeText(c.name)
+        const code = normalizeText(c.code)
+        const aliases = getCountryAliases(c.name)
+        return name.includes(q) || code.includes(q) || aliases.some(a => a.includes(q))
+    })
+})
+
+const selectedCountryObj = computed(() =>
+    COUNTRIES.find(c => normalizeText(c.name) === normalizeText(importForm.value.country))
+)
+
+const filteredCities = computed(() => {
+    const list = selectedCountryObj.value?.cities ?? []
+    const q = citySearch.value.toLowerCase()
+    return list.filter(c => c.toLowerCase().includes(q))
+})
+
+const filteredCuisines = computed(() => {
+    const q = cuisineSearch.value.toLowerCase()
+    return CUISINES.filter(c => c.toLowerCase().includes(q))
+})
+
+function selectCountry(c) {
+    const prevCountry = importForm.value.country
+    importForm.value.country = c.name
+    if (normalizeText(prevCountry) !== normalizeText(c.name)) {
+        importForm.value.cities = []
+    }
+    countrySearch.value      = ''
+    countryDropOpen.value    = false
+}
+
+function applyTypedCountry() {
+    const raw = countrySearch.value.trim()
+    if (!raw) return
+
+    const found = findCountryByQuery(raw)
+    if (found) {
+        selectCountry(found)
+        return
+    }
+
+    const nextCountry = toTitleCase(raw)
+    const prevCountry = importForm.value.country
+    importForm.value.country = nextCountry
+    if (normalizeText(prevCountry) !== normalizeText(nextCountry)) {
+        importForm.value.cities = []
+    }
+    countryDropOpen.value = false
+}
+
+function toggleCity(city) {
+    const idx = importForm.value.cities.indexOf(city)
+    if (idx === -1) importForm.value.cities.push(city)
+    else importForm.value.cities.splice(idx, 1)
+    citySearch.value = ''
+}
+
+function removeCity(city) {
+    importForm.value.cities = importForm.value.cities.filter(c => c !== city)
+}
+
+function addTypedCity() {
+    const typedCity = citySearch.value.trim()
+    if (!typedCity) return
+
+    const normalizedTyped = normalizeText(typedCity)
+    const exists = importForm.value.cities.some(c => normalizeText(c) === normalizedTyped)
+    if (!exists) {
+        importForm.value.cities.push(toTitleCase(typedCity))
+    }
+
+    citySearch.value = ''
+    cityDropOpen.value = false
+}
+
+function selectCuisine(cu) {
+    importForm.value.cuisine = cu
+    cuisineSearch.value      = ''
+    cuisineDropOpen.value    = false
+}
+
+const vClickOutside = {
+    mounted(el, binding) {
+        el._clickOutsideHandler = (e) => { if (!el.contains(e.target)) binding.value(e) }
+        document.addEventListener('click', el._clickOutsideHandler)
+    },
+    unmounted(el) { document.removeEventListener('click', el._clickOutsideHandler) },
+}
+
+async function runImport() {
+    if (!importForm.value.country && countrySearch.value.trim()) {
+        applyTypedCountry()
+    }
+
+    if (citySearch.value.trim()) {
+        addTypedCity()
+    }
+
+    if (!importForm.value.country || !importForm.value.cities.length) {
+        importResult.value = {
+            type: 'error',
+            message: 'Davlat va kamida bitta shahar kiriting',
+            errors: [],
+        }
+        return
+    }
+
+    importResult.value = null
+    importing.value    = true
+    try {
+        const res = await api.post('/admin/import-google-places', {
+            country: importForm.value.country,
+            cities:  importForm.value.cities,
+            cuisine: importForm.value.cuisine || undefined,
+            max:     importForm.value.max,
+        })
+        importResult.value = { type: 'success', message: res.data.message, errors: res.data.errors }
+        const listRes = await api.get('/admin/restaurants')
+        restaurants.value = listRes.data
+    } catch (e) {
+        importResult.value = { type: 'error', message: e.response?.data?.message || 'Xatolik yuz berdi', errors: [] }
+    } finally {
+        importing.value = false
+    }
+}
+
+// ─── Existing logic ───────────────────────────────────────────────────────────
+
 const filtered = computed(() => {
     if (!search.value) return restaurants.value
     const q = search.value.toLowerCase()
@@ -211,7 +630,7 @@ const filtered = computed(() => {
     )
 })
 
-const activeCount = computed(() => restaurants.value.filter(r => r.is_active).length)
+const activeCount   = computed(() => restaurants.value.filter(r => r.is_active).length)
 const inactiveCount = computed(() => restaurants.value.filter(r => !r.is_active).length)
 
 onMounted(async () => {
@@ -454,6 +873,114 @@ const logout = async () => {
     background: #f9f9f9; font-size: 13px; color: #888;
 }
 .table-footer strong { color: #1a1a1a; }
+
+/* ─── IMPORT CARD ─────────────────────────────────────────────────────────── */
+.import-card {
+    background: white; border-radius: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06); overflow: visible;
+}
+.import-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 18px 24px; border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+}
+.import-title {
+    font-size: 16px; font-weight: 700; color: #1a1a1a;
+    display: flex; align-items: center; gap: 8px;
+}
+.import-toggle-btn {
+    background: #f4f5f7; border: none; cursor: pointer;
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #666; transition: all 0.2s;
+}
+.import-toggle-btn:hover { background: #E1F5EE; color: #1D9E75; }
+.import-body {
+    padding: 20px 24px; display: flex; flex-direction: column; gap: 18px;
+}
+.import-row { display: flex; flex-direction: column; gap: 8px; }
+.import-label {
+    font-size: 13px; font-weight: 600; color: #555;
+    display: flex; align-items: center; gap: 6px;
+}
+.import-label i { color: #1D9E75; }
+.import-number-input {
+    padding: 10px 14px; border: 1.5px solid #e8e8e8; border-radius: 10px;
+    font-size: 14px; outline: none; width: 200px; transition: border 0.2s;
+}
+.import-number-input:focus { border-color: #1D9E75; }
+
+/* Searchable Select */
+.searchable-select { position: relative; }
+.ss-input-wrap {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+    padding: 8px 12px; border: 1.5px solid #e8e8e8; border-radius: 10px;
+    cursor: text; background: white; transition: border 0.2s; min-height: 44px;
+}
+.ss-input-wrap:focus-within { border-color: #1D9E75; }
+.ss-icon { color: #aaa; font-size: 13px; flex-shrink: 0; }
+.ss-input {
+    border: none; outline: none; font-size: 14px; color: #1a1a1a;
+    flex: 1; min-width: 120px; background: transparent;
+}
+.ss-add-btn {
+    width: 24px; height: 24px;
+    border: none; border-radius: 50%;
+    background: #E1F5EE; color: #0F6E56;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0;
+}
+.ss-add-btn:hover { background: #9FE1CB; }
+.ss-input:disabled { color: #bbb; cursor: not-allowed; }
+.ss-selected-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #E1F5EE; color: #0F6E56;
+    padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500;
+}
+.ss-selected-badge i { cursor: pointer; font-size: 10px; }
+.ss-selected-badge i:hover { color: #E24B4A; }
+.ss-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.ss-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #E1F5EE; color: #0F6E56;
+    padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500;
+}
+.ss-tag i { cursor: pointer; font-size: 10px; }
+.ss-tag i:hover { color: #E24B4A; }
+.ss-dropdown {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: white; border: 1.5px solid #e8e8e8; border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1); z-index: 200;
+    max-height: 220px; overflow-y: auto;
+}
+.ss-option {
+    padding: 10px 14px; font-size: 14px; cursor: pointer;
+    display: flex; align-items: center; gap: 8px; transition: background 0.15s;
+}
+.ss-option:hover { background: #f4f5f7; }
+.ss-option.active { background: #E1F5EE; color: #0F6E56; font-weight: 600; }
+.ss-flag { font-size: 18px; }
+
+/* Import run button */
+.import-run-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 28px; border-radius: 12px; border: none; cursor: pointer;
+    background: linear-gradient(135deg, #1D9E75, #0F6E56);
+    color: white; font-size: 15px; font-weight: 600;
+    transition: all 0.2s; align-self: flex-start;
+}
+.import-run-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(29,158,117,0.35); }
+.import-run-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Import result */
+.import-result {
+    padding: 14px 18px; border-radius: 12px; font-size: 14px; font-weight: 500;
+    display: flex; flex-direction: column; gap: 6px;
+}
+.import-result.success { background: #E1F5EE; color: #0F6E56; }
+.import-result.error   { background: #FCEBEB; color: #A32D2D; }
+.import-errors { margin-top: 4px; display: flex; flex-direction: column; gap: 4px; }
+.import-error-item { font-size: 12px; opacity: 0.85; }
 
 /* MOBILE */
 @media (max-width: 768px) {
