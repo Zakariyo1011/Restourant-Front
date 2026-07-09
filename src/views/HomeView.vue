@@ -148,7 +148,7 @@
                 <i class="fas fa-fire section-icon"></i>
                 {{ locationActive ? $t('home.nearbyTitle') : $t('home.allTitle') }}
             </h2>
-            <p class="section-sub">{{ $t('home.found', { count: filtered.length }) }}</p>
+            <p class="section-sub">{{ $t('home.found', { count: displayCount }) }}</p>
         </div>
         <div class="section-sort-pill">
             {{ activeSortingLabel }}
@@ -192,6 +192,7 @@
                     :src="resolveImageUrl(getRestaurantImageUrl(r))"
                     :alt="r.name"
                     class="card-img"
+                    loading="lazy"
                 />
                 <div v-else class="card-no-img">
                     <i class="fas fa-utensils"></i>
@@ -233,6 +234,16 @@
                     <i class="fas fa-arrow-right"></i>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div v-if="!locationActive && restaurants.length" ref="loadMoreTrigger" class="load-more-sentinel">
+        <div v-if="paginationLoading" class="load-more-status">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Yana restoranlar yuklanmoqda...</span>
+        </div>
+        <div v-else-if="!hasMorePages" class="load-more-status done">
+            <span>Barcha restoranlar yuklandi</span>
         </div>
     </div>
 </div>
@@ -354,8 +365,13 @@ const { t, locale } = useI18n()
 const auth = useAuthStore()
 const restaurants = ref([])
 const loading = ref(true)
+const paginationLoading = ref(false)
 const search = ref('')
 const sortBy = ref('default')
+const currentPage = ref(1)
+const lastPage = ref(1)
+const perPage = ref(12)
+const totalRestaurants = ref(0)
 const userLocation = ref(null)
 const locationActive = ref(false)
 const locationLoading = ref(false)
@@ -380,6 +396,8 @@ const selectedCuisineQuick = ref('')
 const selectedSortingQuick = ref('trust')
 const moreMenuRef = ref(null)
 const sortingMenuRef = ref(null)
+const loadMoreTrigger = ref(null)
+const loadMoreObserver = ref(null)
 
 const filters = ref({
     cuisine_type: '',
@@ -453,6 +471,26 @@ const promoTrackStyle = computed(() => ({
 }))
 
 const activeSortingLabel = computed(() => sortingLabelsMap[selectedSortingQuick.value] || 'I trust you')
+
+const hasActiveClientFilters = computed(() => {
+    return Boolean(
+        search.value.trim() ||
+        filters.value.cuisine_type ||
+        filters.value.country ||
+        filters.value.city ||
+        filters.value.price_range
+    )
+})
+
+const displayCount = computed(() => {
+    if (locationActive.value || hasActiveClientFilters.value) {
+        return filtered.value.length
+    }
+
+    return totalRestaurants.value || filtered.value.length
+})
+
+const hasMorePages = computed(() => !locationActive.value && currentPage.value < lastPage.value)
 
 const modalHelperText = computed(() => {
     if (addressSearchLoading.value) {
@@ -653,6 +691,113 @@ const filtered = computed(() => {
 
     return result
 })
+
+const normalizeRestaurantListResponse = (payload) => {
+    const items = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.data)
+            ? payload.data
+            : []
+
+    return {
+        items,
+        currentPage: Number(payload?.current_page) || 1,
+        lastPage: Number(payload?.last_page) || 1,
+        perPage: Number(payload?.per_page) || items.length || perPage.value,
+        total: Number(payload?.total) || items.length,
+    }
+}
+
+const mergeRestaurants = (currentItems, nextItems) => {
+    const seenIds = new Set(currentItems.map(item => item.id))
+    const merged = [...currentItems]
+
+    nextItems.forEach((item) => {
+        if (seenIds.has(item.id)) return
+        seenIds.add(item.id)
+        merged.push(item)
+    })
+
+    return merged
+}
+
+const fetchRestaurants = async (page = 1) => {
+    const targetPage = Number(page) || 1
+    const isInitialLoad = targetPage === 1 && restaurants.value.length === 0
+
+    if (isInitialLoad) {
+        loading.value = true
+    } else {
+        paginationLoading.value = true
+    }
+
+    try {
+        const res = await api.get('/restaurants', {
+            params: {
+                page: targetPage,
+                per_page: perPage.value,
+            },
+        })
+
+        const normalized = normalizeRestaurantListResponse(res?.data)
+
+        restaurants.value = targetPage === 1
+            ? normalized.items
+            : mergeRestaurants(restaurants.value, normalized.items)
+        currentPage.value = normalized.currentPage
+        lastPage.value = normalized.lastPage
+        perPage.value = normalized.perPage
+        totalRestaurants.value = normalized.total
+    } catch (error) {
+        console.error(error)
+        if (targetPage === 1) {
+            restaurants.value = []
+            totalRestaurants.value = 0
+        }
+    } finally {
+        loading.value = false
+        paginationLoading.value = false
+    }
+}
+
+const loadNextRestaurants = async () => {
+    if (!hasMorePages.value || paginationLoading.value || loading.value) {
+        return
+    }
+
+    await fetchRestaurants(currentPage.value + 1)
+}
+
+const disconnectLoadMoreObserver = () => {
+    if (loadMoreObserver.value) {
+        loadMoreObserver.value.disconnect()
+        loadMoreObserver.value = null
+    }
+}
+
+const setupLoadMoreObserver = () => {
+    disconnectLoadMoreObserver()
+
+    if (!loadMoreTrigger.value || !hasMorePages.value) {
+        return
+    }
+
+    loadMoreObserver.value = new IntersectionObserver(
+        (entries) => {
+            const entry = entries[0]
+            if (entry?.isIntersecting) {
+                loadNextRestaurants()
+            }
+        },
+        {
+            root: null,
+            rootMargin: '320px 0px',
+            threshold: 0.1,
+        }
+    )
+
+    loadMoreObserver.value.observe(loadMoreTrigger.value)
+}
 
 const setDraftLocation = ({ lat, lng, label }) => {
     addressDraft.value = {
@@ -989,12 +1134,14 @@ onMounted(async () => {
         nextPromoSlide()
     }, 5000)
 
-    try {
-        const res = await api.get('/restaurants')
-        restaurants.value = res.data
-    } finally {
-        loading.value = false
-    }
+    await fetchRestaurants(1)
+    await nextTick()
+    setupLoadMoreObserver()
+})
+
+watch([loadMoreTrigger, hasMorePages, locationActive], async () => {
+    await nextTick()
+    setupLoadMoreObserver()
 })
 
 watch(showAddressModal, async (isOpen) => {
@@ -1022,6 +1169,7 @@ onBeforeUnmount(() => {
     clearTimeout(addressSearchDebounce.value)
     document.removeEventListener('click', handleClickOutsideMenus)
     clearInterval(promoInterval.value)
+    disconnectLoadMoreObserver()
     if (modalMap.value) {
         modalMap.value.remove()
         modalMap.value = null
@@ -1507,6 +1655,30 @@ onBeforeUnmount(() => {
 
 /* GRID */
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+
+.load-more-sentinel {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 72px;
+    padding: 12px 0 6px;
+}
+
+.load-more-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(15, 110, 86, 0.12);
+    color: #4b5563;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.load-more-status.done {
+    color: #0f6e56;
+}
 
 /* CARD */
 .card {
