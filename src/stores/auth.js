@@ -21,8 +21,11 @@ export const useAuthStore = defineStore('auth', {
             try {
                 const res = await api.get('/me')
                 this.user = res.data.user
-            } catch {
-                this.logout()
+            } catch (error) {
+                if (error?.response?.status === 401 || error?.response?.status === 419) {
+                    this.logout()
+                    return
+                }
             }
         },
 

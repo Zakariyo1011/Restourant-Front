@@ -270,11 +270,39 @@
                         <i class="fas fa-list"></i>
                         {{ $t('admin.allRestaurants') }}
                     </div>
-                    <div class="table-search">
-                        <i class="fas fa-search"></i>
-                        <input v-model="search" :placeholder="$t('admin.search')" class="search-input" />
+                    <div class="table-controls">
+                        <div class="bulk-actions" v-if="selectedIds.length">
+                            <button class="bulk-btn bulk-activate" @click="bulkSetActive(true)">
+                                <i class="fas fa-check-circle"></i>
+                                Faollashtirish ({{ selectedIds.length }})
+                            </button>
+                            <button class="bulk-btn bulk-deactivate" @click="bulkSetActive(false)">
+                                <i class="fas fa-ban"></i>
+                                Nofaol qilish ({{ selectedIds.length }})
+                            </button>
+                        </div>
+                        <div class="table-search">
+                            <i class="fas fa-search"></i>
+                            <input v-model="search" :placeholder="$t('admin.search')" class="search-input" />
+                        </div>
                     </div>
                 </div>
+                <div class="status-filters">
+                    <button class="status-chip" :class="{ active: statusFilter === 'all' }" @click="statusFilter = 'all'">
+                        Barchasi ({{ restaurants.length }})
+                    </button>
+                    <button class="status-chip" :class="{ active: statusFilter === 'active' }" @click="statusFilter = 'active'">
+                        Faol ({{ activeCount }})
+                    </button>
+                    <button class="status-chip" :class="{ active: statusFilter === 'inactive' }" @click="statusFilter = 'inactive'">
+                        Nofaol ({{ inactiveCount }})
+                    </button>
+                    <button class="status-chip" :class="{ active: statusFilter === 'archived' }" @click="statusFilter = 'archived'">
+                        Arxiv ({{ archivedCount }})
+                    </button>
+                </div>
+
+                <div v-if="tableNotice" class="table-notice" :class="{ error: tableNoticeType === 'error' }">{{ tableNotice }}</div>
 
                 <!-- Loading -->
                 <div v-if="loading" class="loading-state">
@@ -293,6 +321,14 @@
                     <table class="table">
                         <thead>
                             <tr>
+                                <th>
+                                    <input
+                                        type="checkbox"
+                                        :checked="allVisibleSelected"
+                                        :disabled="!selectableFiltered.length"
+                                        @change="toggleSelectAll($event.target.checked)"
+                                    />
+                                </th>
                                 <th>{{ $t('admin.number') }}</th>
                                 <th>{{ $t('admin.restaurant') }}</th>
                                 <th>{{ $t('admin.owner') }}</th>
@@ -303,7 +339,15 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(r, i) in filtered" :key="r.id" class="table-row">
+                            <tr v-for="(r, i) in filtered" :key="r.id" class="table-row" :class="{ archived: !!r.deleted_at }">
+                                <td>
+                                    <input
+                                        type="checkbox"
+                                        :disabled="!!r.deleted_at"
+                                        :checked="selectedIds.includes(r.id)"
+                                        @change="toggleSelection(r.id, $event.target.checked)"
+                                    />
+                                </td>
                                 <td class="td-num">{{ i + 1 }}</td>
                                 <td>
                                     <div class="restaurant-cell">
@@ -340,7 +384,11 @@
                                     {{ r.location?.address || '—' }}
                                 </td>
                                 <td>
-                                    <span :class="r.is_active ? 'badge-active' : 'badge-inactive'">
+                                    <span v-if="r.deleted_at" class="badge-archived">
+                                        <i class="fas fa-box-archive"></i>
+                                        Arxiv
+                                    </span>
+                                    <span v-else :class="r.is_active ? 'badge-active' : 'badge-inactive'">
                                         <i :class="r.is_active ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
                                         {{ r.is_active ? $t('admin.activeLabel') : $t('admin.inactiveLabel') }}
                                     </span>
@@ -348,11 +396,20 @@
                                 <td>
                                     <div class="td-actions">
                                         <button
+                                            v-if="!r.deleted_at"
                                             @click="toggle(r)"
                                             :class="r.is_active ? 'btn-deactivate' : 'btn-activate'"
                                         >
                                             <i :class="r.is_active ? 'fas fa-ban' : 'fas fa-check'"></i>
                                             {{ r.is_active ? $t('admin.deactivate') : $t('admin.activate') }}
+                                        </button>
+                                        <button v-if="!r.deleted_at" class="btn-archive" @click="archiveRestaurant(r)">
+                                            <i class="fas fa-box-archive"></i>
+                                            Arxivlash
+                                        </button>
+                                        <button v-else class="btn-restore" @click="restoreRestaurant(r)">
+                                            <i class="fas fa-rotate-left"></i>
+                                            Tiklash
                                         </button>
                                         <router-link :to="`/restaurant/${r.id}`" class="btn-view">
                                             <i class="fas fa-eye"></i>
@@ -386,6 +443,10 @@ const router = useRouter()
 const restaurants = ref([])
 const loading = ref(true)
 const search = ref('')
+const selectedIds = ref([])
+const tableNotice = ref('')
+const tableNoticeType = ref('success')
+const statusFilter = ref('all')
 
 // ─── Google Import ma'lumotlari ───────────────────────────────────────────────
 
@@ -609,8 +670,7 @@ async function runImport() {
             max:     importForm.value.max,
         })
         importResult.value = { type: 'success', message: res.data.message, errors: res.data.errors }
-        const listRes = await api.get('/admin/restaurants')
-        restaurants.value = listRes.data
+        await refreshRestaurants()
     } catch (e) {
         importResult.value = { type: 'error', message: e.response?.data?.message || 'Xatolik yuz berdi', errors: [] }
     } finally {
@@ -621,30 +681,135 @@ async function runImport() {
 // ─── Existing logic ───────────────────────────────────────────────────────────
 
 const filtered = computed(() => {
-    if (!search.value) return restaurants.value
+    const byStatus = restaurants.value.filter(r => {
+        if (statusFilter.value === 'active') return !r.deleted_at && r.is_active
+        if (statusFilter.value === 'inactive') return !r.deleted_at && !r.is_active
+        if (statusFilter.value === 'archived') return !!r.deleted_at
+        return true
+    })
+
+    if (!search.value) return byStatus
     const q = search.value.toLowerCase()
-    return restaurants.value.filter(r =>
+    return byStatus.filter(r =>
         r.name?.toLowerCase().includes(q) ||
         r.owner?.name?.toLowerCase().includes(q) ||
         r.phone?.includes(q)
     )
 })
 
-const activeCount   = computed(() => restaurants.value.filter(r => r.is_active).length)
-const inactiveCount = computed(() => restaurants.value.filter(r => !r.is_active).length)
+const selectableFiltered = computed(() => filtered.value.filter(r => !r.deleted_at))
 
-onMounted(async () => {
+const allVisibleSelected = computed(() => {
+    if (!selectableFiltered.value.length) return false
+    return selectableFiltered.value.every(r => selectedIds.value.includes(r.id))
+})
+
+const activeCount   = computed(() => restaurants.value.filter(r => r.is_active && !r.deleted_at).length)
+const inactiveCount = computed(() => restaurants.value.filter(r => !r.is_active && !r.deleted_at).length)
+const archivedCount = computed(() => restaurants.value.filter(r => !!r.deleted_at).length)
+
+function setNotice(message, type = 'success') {
+    tableNotice.value = message
+    tableNoticeType.value = type
+    setTimeout(() => {
+        tableNotice.value = ''
+        tableNoticeType.value = 'success'
+    }, 3500)
+}
+
+async function refreshRestaurants() {
     try {
         const res = await api.get('/admin/restaurants')
         restaurants.value = res.data
+    } catch (error) {
+        if (error?.response?.status === 401) {
+            auth.logout()
+            router.push('/login')
+            return
+        }
+        setNotice(error?.response?.data?.message || 'Admin ro‘yxatini yuklashda xatolik.', 'error')
+        restaurants.value = []
+    }
+}
+
+onMounted(async () => {
+    try {
+        await refreshRestaurants()
     } finally {
         loading.value = false
     }
 })
 
 const toggle = async (r) => {
-    await api.patch(`/admin/restaurants/${r.id}/toggle`)
-    r.is_active = !r.is_active
+    try {
+        await api.patch(`/admin/restaurants/${r.id}/toggle`)
+        r.is_active = !r.is_active
+    } catch (error) {
+        setNotice(error?.response?.data?.message || 'Statusni o‘zgartirib bo‘lmadi.', 'error')
+    }
+}
+
+function toggleSelection(id, checked) {
+    if (checked) {
+        if (!selectedIds.value.includes(id)) selectedIds.value.push(id)
+        return
+    }
+    selectedIds.value = selectedIds.value.filter(itemId => itemId !== id)
+}
+
+function toggleSelectAll(checked) {
+    if (checked) {
+        selectedIds.value = selectableFiltered.value.map(r => r.id)
+        return
+    }
+    selectedIds.value = []
+}
+
+async function bulkSetActive(isActive) {
+    if (!selectedIds.value.length) return
+
+    const selectedCount = selectedIds.value.length
+
+    try {
+        await api.patch('/admin/restaurants/bulk-status', {
+            ids: selectedIds.value,
+            is_active: isActive,
+        })
+
+        await refreshRestaurants()
+        setNotice(
+            isActive
+                ? `${selectedCount} ta restoran faollashtirildi.`
+                : `${selectedCount} ta restoran nofaol qilindi.`
+        )
+        selectedIds.value = []
+    } catch (error) {
+        setNotice(error?.response?.data?.message || 'Bulk amal bajarilmadi.', 'error')
+    }
+}
+
+async function archiveRestaurant(restaurant) {
+    const ok = window.confirm(`"${restaurant.name}" restoranni arxivga o'tkazamizmi?`)
+    if (!ok) return
+
+    try {
+        await api.delete(`/admin/restaurants/${restaurant.id}`)
+        await refreshRestaurants()
+        selectedIds.value = selectedIds.value.filter(id => id !== restaurant.id)
+        setNotice('Restoran arxivga olindi.')
+    } catch (error) {
+        setNotice(error?.response?.data?.message || 'Arxivlash amalga oshmadi.', 'error')
+    }
+}
+
+async function restoreRestaurant(restaurant) {
+    try {
+        await api.patch(`/admin/restaurants/${restaurant.id}/restore`)
+        await refreshRestaurants()
+        setNotice('Restoran tiklandi.')
+    } catch (error) {
+        setNotice(error?.response?.data?.message || 'Tiklash amalga oshmadi.', 'error')
+    }
 }
 
 const logout = async () => {
@@ -754,6 +919,62 @@ const logout = async () => {
     display: flex; justify-content: space-between; align-items: center;
     padding: 20px 24px; border-bottom: 1px solid #f0f0f0;
 }
+.table-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.bulk-actions { display: flex; align-items: center; gap: 8px; }
+.bulk-btn {
+    border: none;
+    border-radius: 9px;
+    padding: 8px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.bulk-activate { background: #E1F5EE; color: #0F6E56; }
+.bulk-activate:hover { background: #bde9da; }
+.bulk-deactivate { background: #FCEBEB; color: #A32D2D; }
+.bulk-deactivate:hover { background: #f7d0d0; }
+.table-notice {
+    margin: 12px 24px 0;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #e9f7f2;
+    color: #0F6E56;
+    font-size: 13px;
+    font-weight: 600;
+}
+.table-notice.error {
+    background: #fdecec;
+    color: #a32d2d;
+}
+.status-filters {
+    display: flex;
+    gap: 8px;
+    padding: 14px 24px 0;
+    flex-wrap: wrap;
+}
+.status-chip {
+    border: 1px solid #e6e6e6;
+    background: #fff;
+    color: #666;
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.status-chip:hover { border-color: #b8d9cf; color: #1D9E75; }
+.status-chip.active {
+    background: #E1F5EE;
+    border-color: #9edec8;
+    color: #0F6E56;
+}
 .table-title {
     font-size: 16px; font-weight: 700; color: #1a1a1a;
     display: flex; align-items: center; gap: 8px;
@@ -797,6 +1018,7 @@ const logout = async () => {
 }
 .table-row { transition: background 0.15s; }
 .table-row:hover { background: #f9fffe; }
+.table-row.archived { opacity: 0.8; background: #fbfbfb; }
 .table td {
     padding: 14px 16px; border-bottom: 1px solid #f5f5f5;
     font-size: 14px; color: #333; vertical-align: middle;
@@ -839,13 +1061,14 @@ const logout = async () => {
 .address-icon { color: #E24B4A; margin-right: 4px; font-size: 11px; }
 
 /* BADGES */
-.badge-active, .badge-inactive {
+.badge-active, .badge-inactive, .badge-archived {
     display: inline-flex; align-items: center; gap: 5px;
     padding: 5px 12px; border-radius: 20px;
     font-size: 12px; font-weight: 500; white-space: nowrap;
 }
 .badge-active { background: #E1F5EE; color: #0F6E56; }
 .badge-inactive { background: #FCEBEB; color: #A32D2D; }
+.badge-archived { background: #f2f2f2; color: #666; }
 
 /* ACTIONS */
 .td-actions { display: flex; align-items: center; gap: 6px; }
@@ -859,6 +1082,22 @@ const logout = async () => {
 .btn-activate:hover { background: #9FE1CB; }
 .btn-deactivate { background: #FCEBEB; color: #A32D2D; }
 .btn-deactivate:hover { background: #F7C1C1; }
+.btn-archive {
+    display: flex; align-items: center; gap: 5px;
+    padding: 7px 12px; border-radius: 8px;
+    border: none; cursor: pointer;
+    font-size: 12px; font-weight: 500;
+    background: #f3f3f3; color: #555;
+}
+.btn-archive:hover { background: #e6e6e6; }
+.btn-restore {
+    display: flex; align-items: center; gap: 5px;
+    padding: 7px 12px; border-radius: 8px;
+    border: none; cursor: pointer;
+    font-size: 12px; font-weight: 500;
+    background: #eef4ff; color: #3058a6;
+}
+.btn-restore:hover { background: #dfe9ff; }
 .btn-view {
     width: 32px; height: 32px; border-radius: 8px;
     background: #f0f0f0; color: #666;
