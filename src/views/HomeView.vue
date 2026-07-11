@@ -208,7 +208,7 @@
             <div class="card-body">
                 <h3 class="card-title">{{ r.name }}</h3>
                 <div class="card-cuisine" v-if="r.cuisine_type">
-                    🍽 {{ r.cuisine_type ? $t('cuisines.' + r.cuisine_type) : '' }}
+                    🍽 {{ getCuisineLabel(r.cuisine_type) }}
                 </div>
                 <p class="card-desc">{{ r.description || $t('home.noDesc') }}</p>
                 <div class="card-info">
@@ -398,6 +398,8 @@ const moreMenuRef = ref(null)
 const sortingMenuRef = ref(null)
 const loadMoreTrigger = ref(null)
 const loadMoreObserver = ref(null)
+const pendingCuisineHydration = ref(false)
+const isHydratingAllPages = ref(false)
 
 const filters = ref({
     cuisine_type: '',
@@ -407,6 +409,107 @@ const filters = ref({
 })
 
 const cuisineKeys = ['uzbek', 'tajik', 'kazakh', 'kyrgyz', 'turkish', 'arabic', 'persian', 'afghan', 'georgian', 'russian', 'european', 'asian', 'mixed']
+const cuisineAliases = {
+    ozbek: 'uzbek',
+    ozbekcha: 'uzbek',
+    uzbekistan: 'uzbek',
+    turk: 'turkish',
+    turkcha: 'turkish',
+    turkiye: 'turkish',
+    turkey: 'turkish',
+    turki: 'turkish',
+    kazak: 'kazakh',
+    kazakhskaya: 'kazakh',
+    qozoqcha: 'kazakh',
+    qazaq: 'kazakh',
+    qozoq: 'kazakh',
+    kirgiz: 'kyrgyz',
+    qirgizcha: 'kyrgyz',
+    qirgiz: 'kyrgyz',
+    qyrgyz: 'kyrgyz',
+}
+
+const normalizeCuisineValue = (value) => {
+    if (!value) return ''
+
+    const normalized = String(value)
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[_\s]+/g, '-')
+
+    if (cuisineKeys.includes(normalized)) {
+        return normalized
+    }
+
+    const compact = normalized.replace(/[-']/g, '')
+    if (cuisineKeys.includes(compact)) {
+        return compact
+    }
+
+    for (const key of cuisineKeys) {
+        if (normalized.includes(key) || compact.includes(key)) {
+            return key
+        }
+    }
+
+    for (const [alias, canonical] of Object.entries(cuisineAliases)) {
+        const compactAlias = alias.replace(/[-']/g, '')
+        if (normalized.includes(alias) || compact.includes(compactAlias)) {
+            return canonical
+        }
+    }
+
+    return cuisineAliases[compact] || cuisineAliases[normalized] || ''
+}
+
+const normalizeSearchText = (value) => {
+    if (!value) return ''
+
+    return String(value)
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+}
+
+const cuisineKeywordMap = {
+    uzbek: ['uzbek', 'ozbek', 'o‘zbek'],
+    tajik: ['tajik', 'tojik'],
+    kazakh: ['kazakh', 'qazaq', 'qozoq'],
+    kyrgyz: ['kyrgyz', 'qirgiz', 'kirgiz'],
+    turkish: ['turkish', 'turk', 'turkiye'],
+    arabic: ['arabic', 'arab'],
+    persian: ['persian', 'fors', 'iranian'],
+    afghan: ['afghan', 'afgon'],
+    georgian: ['georgian', 'gruzin'],
+    russian: ['russian', 'rus'],
+    european: ['european', 'evropa'],
+    asian: ['asian', 'osiyo', 'asia'],
+    mixed: ['mixed', 'aralash', 'mix'],
+}
+
+const matchesCuisineByText = (restaurant, cuisineKey) => {
+    const text = normalizeSearchText([
+        restaurant?.cuisine_type,
+        restaurant?.name,
+        restaurant?.description,
+    ].filter(Boolean).join(' '))
+
+    if (!text) return false
+
+    const keywords = cuisineKeywordMap[cuisineKey] || [cuisineKey]
+    return keywords.some(keyword => text.includes(normalizeSearchText(keyword)))
+}
+
+const getCuisineLabel = (value) => {
+    const key = normalizeCuisineValue(value)
+    if (key) {
+        return t(`cuisines.${key}`)
+    }
+
+    return value || ''
+}
 const promoSlides = [
     {
         id: 1,
@@ -523,11 +626,18 @@ const goToPromoSlide = (index) => {
     currentPromoIndex.value = index
 }
 
-const selectQuickCategory = (key, closeMenu = false) => {
-    selectedCuisineQuick.value = key
-    filters.value.cuisine_type = key
+const selectQuickCategory = async (key, closeMenu = false) => {
+    const normalizedKey = normalizeCuisineValue(key)
+    selectedCuisineQuick.value = normalizedKey
+    filters.value.cuisine_type = normalizedKey
+    pendingCuisineHydration.value = Boolean(normalizedKey)
+
     if (closeMenu) {
         showMoreMenu.value = false
+    }
+
+    if (normalizedKey && !locationActive.value && !loading.value && hasMorePages.value) {
+        await ensureAllRestaurantsLoaded()
     }
 }
 
@@ -662,8 +772,12 @@ const filtered = computed(() => {
         )
     }
 
-    if (filters.value.cuisine_type) {
-        result = result.filter(r => r.cuisine_type === filters.value.cuisine_type)
+    const selectedCuisine = normalizeCuisineValue(filters.value.cuisine_type)
+    if (selectedCuisine) {
+        const strictMatched = result.filter(r => normalizeCuisineValue(r.cuisine_type) === selectedCuisine)
+        result = strictMatched.length
+            ? strictMatched
+            : result.filter(r => matchesCuisineByText(r, selectedCuisine))
     }
     if (filters.value.country) {
         result = result.filter(r => r.country === filters.value.country)
@@ -766,6 +880,30 @@ const loadNextRestaurants = async () => {
     }
 
     await fetchRestaurants(currentPage.value + 1)
+}
+
+const ensureAllRestaurantsLoaded = async () => {
+    if (locationActive.value || isHydratingAllPages.value) {
+        return
+    }
+
+    isHydratingAllPages.value = true
+
+    let guard = 0
+    try {
+        while (currentPage.value < lastPage.value && guard < 100) {
+            const nextPage = currentPage.value + 1
+            await fetchRestaurants(nextPage)
+
+            if (currentPage.value < nextPage) {
+                break
+            }
+
+            guard += 1
+        }
+    } finally {
+        isHydratingAllPages.value = false
+    }
 }
 
 const disconnectLoadMoreObserver = () => {
@@ -1142,6 +1280,26 @@ onMounted(async () => {
 watch([loadMoreTrigger, hasMorePages, locationActive], async () => {
     await nextTick()
     setupLoadMoreObserver()
+})
+
+watch([loading, paginationLoading, locationActive, () => filters.value.cuisine_type, hasMorePages], async () => {
+    if (!pendingCuisineHydration.value) {
+        return
+    }
+
+    if (locationActive.value || !filters.value.cuisine_type) {
+        pendingCuisineHydration.value = false
+        return
+    }
+
+    if (loading.value || paginationLoading.value) {
+        return
+    }
+
+    pendingCuisineHydration.value = false
+    if (hasMorePages.value) {
+        await ensureAllRestaurantsLoaded()
+    }
 })
 
 watch(showAddressModal, async (isOpen) => {
