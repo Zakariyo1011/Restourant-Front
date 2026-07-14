@@ -1202,7 +1202,7 @@ onBeforeUnmount(() => {
 .footer-brand i { color: #1D9E75; }
 .footer-copy { font-size: 13px; color: #666; }
 
-/* Mobile */
+/* Mobileeee */
 @media (max-width: 768px) {
     .main { padding: 0 12px 32px; margin-top: 10px; }
     .section-header { flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px 16px; }
@@ -1218,4 +1218,6 @@ onBeforeUnmount(() => {
     .section-header { border-radius: 12px; }
     .section-sort-pill { align-self: flex-start; }
 }
+
+
 </style>
