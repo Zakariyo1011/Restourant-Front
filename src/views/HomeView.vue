@@ -1,146 +1,39 @@
 <template>
     <div class="page">
         <!-- Navbar -->
-        <nav class="navbar">
-            <div class="nav-brand">
-                <div class="brand-icon">
-                    <i class="fas fa-utensils"></i>
-                </div>
-                <span class="brand-name">Restoran<span class="brand-accent">UZ</span></span>
-            </div>
-            <div class="nav-discovery">
-                <div class="search-box nav-search-box">
-                    <i class="fas fa-search search-icon"></i>
-                    <input
-                        v-model="search"
-                        :placeholder="$t('home.searchPlaceholder')"
-                        class="search-input"
-                    />
-                </div>
-                <button class="address-trigger nav-address-trigger" @click="openAddressModal">
-                    <i class="fas fa-location-arrow"></i>
-                    <span>{{ selectedAddressLabel || $t('form.address') }}</span>
-                </button>
-            </div>
-            <div class="nav-right">
-                <LanguageSwitcher />
-                <router-link v-if="!auth.isLoggedIn" to="/login" class="btn-login">
-                    <i class="fas fa-sign-in-alt"></i>
-                    <span>{{ $t('nav.login') }}</span>
-                </router-link>
-                <template v-else>
-                    <router-link v-if="auth.isAdmin" to="/admin" class="btn-login">
-                        <i class="fas fa-shield-alt"></i>
-                        <span>{{ $t('nav.admin') }}</span>
-                    </router-link>
-                    <router-link v-else to="/dashboard" class="btn-login">
-                        <i class="fas fa-th-large"></i>
-                        <span>{{ $t('nav.dashboard') }}</span>
-                    </router-link>
-                </template>
-            </div>
-        </nav>
+        <HomeNavbar
+            :auth="auth"
+            :search-query="search"
+            :selected-address-label="selectedAddressLabel"
+            @update:searchQuery="search = $event"
+            @openAddressModal="openAddressModal"
+        />
 
         <!-- Main content -->
 <div class="main">
-    <section class="promo-slider">
-        <button class="slider-nav slider-prev" @click="prevPromoSlide" aria-label="Previous promo">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-        <div class="promo-slider-window">
-            <div class="promo-slider-track" :style="promoTrackStyle">
-                <article
-                    v-for="slide in promoSlides"
-                    :key="slide.id"
-                    class="promo-slide"
-                    :style="{ background: slide.bg }"
-                >
-                    <div class="promo-slide-content">
-                        <span class="promo-chip">{{ slide.badge }}</span>
-                        <h2>{{ slide.title }}</h2>
-                        <p>{{ slide.subtitle }}</p>
-                    </div>
-                    <div class="promo-slide-icon">
-                        <i :class="slide.icon"></i>
-                    </div>
-                </article>
-            </div>
-        </div>
-        <button class="slider-nav slider-next" @click="nextPromoSlide" aria-label="Next promo">
-            <i class="fas fa-chevron-right"></i>
-        </button>
-    </section>
+    <HomePromoSlider
+        :promo-slides="promoSlides"
+        :current-promo-index="currentPromoIndex"
+        :promo-track-style="promoTrackStyle"
+        @prev="prevPromoSlide"
+        @next="nextPromoSlide"
+        @go="goToPromoSlide"
+    />
 
-    <div class="promo-dots">
-        <button
-            v-for="(slide, index) in promoSlides"
-            :key="slide.id"
-            type="button"
-            class="promo-dot"
-            :class="{ active: index === currentPromoIndex }"
-            @click="goToPromoSlide(index)"
-        ></button>
-    </div>
-
-    <section class="order-toolbar">
-        <h2 class="toolbar-title">What to order</h2>
-        <div class="toolbar-actions">
-            <div class="toolbar-chips">
-                <button
-                    v-for="category in quickCategories"
-                    :key="category.key"
-                    class="toolbar-chip"
-                    :class="{ active: selectedCuisineQuick === category.key }"
-                    @click="selectQuickCategory(category.key)"
-                >
-                    {{ category.label }}
-                </button>
-
-                <div class="dropdown-wrap" ref="moreMenuRef">
-                    <button class="toolbar-chip more-chip" :class="{ active: showMoreMenu }" @click="toggleMoreMenu">
-                        More <i class="fas fa-chevron-down"></i>
-                    </button>
-                    <transition name="menu-fade">
-                        <div v-if="showMoreMenu" class="dropdown-panel">
-                            <button
-                                v-for="category in moreCategories"
-                                :key="category.key"
-                                class="dropdown-option"
-                                @click="selectQuickCategory(category.key, true)"
-                            >
-                                {{ category.label }}
-                            </button>
-                        </div>
-                    </transition>
-                </div>
-            </div>
-
-            <div class="dropdown-wrap" ref="sortingMenuRef">
-                <button class="sorting-chip" @click="toggleSortingMenu">
-                    <i class="fas fa-sliders-h"></i>
-                    Sorting
-                </button>
-                <transition name="menu-fade">
-                    <div v-if="showSortingMenu" class="sorting-panel">
-                        <h3>What do you want to view first?</h3>
-                        <button
-                            v-for="option in sortingOptions"
-                            :key="option.key"
-                            class="sorting-option"
-                            @click="selectedSortingQuick = option.key"
-                        >
-                            <span>{{ option.label }}</span>
-                            <i
-                                class="far"
-                                :class="selectedSortingQuick === option.key ? 'fa-check-circle selected' : 'fa-circle'"
-                            ></i>
-                        </button>
-                        <button class="sorting-apply-btn" @click="applySortingSelection">Show</button>
-                    </div>
-                </transition>
-            </div>
-        </div>
-    </section>
+    <HomeOrderToolbar
+        :quick-categories="quickCategories"
+        :more-categories="moreCategories"
+        :sorting-options="sortingOptions"
+        :selected-cuisine="selectedCuisineQuick"
+        :selected-sorting="selectedSortingQuick"
+        :show-more-menu="showMoreMenu"
+        :show-sorting-menu="showSortingMenu"
+        @selectCategory="(key, close) => selectQuickCategory(key, close)"
+        @toggleMoreMenu="toggleMoreMenu"
+        @toggleSortingMenu="toggleSortingMenu"
+        @selectSorting="selectedSortingQuick = $event"
+        @applySorting="applySortingSelection"
+    />
 
     <div class="section-header">
         <div>
@@ -180,61 +73,15 @@
 
     <!-- Grid -->
     <div v-else class="grid">
-        <div
+        <HomeRestaurantCard
             v-for="r in filtered"
             :key="r.id"
-            class="card"
-            @click="$router.push(`/restaurant/${r.id}`)"
-        >
-            <div class="card-img-wrap">
-                <img
-                    v-if="resolveImageUrl(getRestaurantImageUrl(r))"
-                    :src="resolveImageUrl(getRestaurantImageUrl(r))"
-                    :alt="r.name"
-                    class="card-img"
-                    loading="lazy"
-                />
-                <div v-else class="card-no-img">
-                    <i class="fas fa-utensils"></i>
-                </div>
-                <div class="card-badge">
-                    <i class="fas fa-circle"></i> {{ $t('home.open') }}
-                </div>
-                <div class="distance-badge" v-if="r.distance">
-                    <i class="fas fa-route"></i>
-                    {{ r.distance }} km
-                </div>
-            </div>
-            <div class="card-body">
-                <h3 class="card-title">{{ r.name }}</h3>
-                <div class="card-cuisine" v-if="r.cuisine_type">
-                    🍽 {{ getCuisineLabel(r.cuisine_type) }}
-                </div>
-                <p class="card-desc">{{ r.description || $t('home.noDesc') }}</p>
-                <div class="card-info">
-                    <span class="info-item">
-                        <i class="fas fa-phone-alt"></i>
-                        {{ r.phone || $t('home.noPhone') }}
-                    </span>
-                    <span v-if="r.location" class="info-item">
-                        <i class="fas fa-map-marker-alt"></i>
-                        {{ r.location.address || $t('home.hasAddress') }}
-                    </span>
-                    <span class="info-item" v-if="r.city || r.country">
-                        <i class="fas fa-map-marker-alt"></i>
-                        {{ r.city }}{{ r.city && r.country ? ', ' : '' }}{{ r.country }}
-                    </span>
-                    <span class="info-item" v-if="r.price_range">
-                        <i class="fas fa-tag"></i>
-                        {{ r.price_range }}
-                    </span>
-                </div>
-                <div class="card-cta">
-                    <span>{{ $t('home.viewDetails') }}</span>
-                    <i class="fas fa-arrow-right"></i>
-                </div>
-            </div>
-        </div>
+            :restaurant="r"
+            :resolve-image-url="resolveImageUrl"
+            :get-restaurant-image-url="getRestaurantImageUrl"
+            :get-cuisine-label="getCuisineLabel"
+            @select="$router.push(`/restaurant/${$event}`)"
+        />
     </div>
 
     <div v-if="!locationActive && restaurants.length" ref="loadMoreTrigger" class="load-more-sentinel">
@@ -248,88 +95,22 @@
     </div>
 </div>
 
-        <transition name="modal-fade">
-            <div v-if="showAddressModal" class="address-modal-overlay" @click.self="closeAddressModal">
-                <div class="address-modal">
-                    <div class="address-modal-head">
-                        <div>
-                            <h3>{{ $t('form.address') }}</h3>
-                            <p>{{ modalHelperText }}</p>
-                        </div>
-                        <button class="modal-close-btn" @click="closeAddressModal">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
+        <HomeAddressModal
+            :show="showAddressModal"
+            :address-query="addressQuery"
+            :address-draft="addressDraft"
+            :address-suggestions="addressSuggestions"
+            :address-search-loading="addressSearchLoading"
+            :location-loading="locationLoading"
+            :modal-helper-text="modalHelperText"
+            :selected-map-hint="selectedMapHint"
+            @close="closeAddressModal"
+            @update:addressQuery="addressQuery = $event"
+            @applyAddress="applySelectedAddress"
+            @selectSuggestion="selectAddressSuggestion"
+            @useGps="useCurrentLocationInModal"
+        />
 
-                    <div class="address-modal-search-row">
-                        <div class="address-modal-input-wrap">
-                            <i class="fas fa-search"></i>
-                            <input
-                                v-model="addressQuery"
-                                type="text"
-                                class="address-modal-input"
-                                :placeholder="$t('form.addressPlaceholder')"
-                                @keyup.enter="applySelectedAddress"
-                            />
-                        </div>
-                        <button
-                            class="address-confirm-btn"
-                            :disabled="locationLoading || (!addressDraft && !addressQuery.trim())"
-                            @click="applySelectedAddress"
-                        >
-                            {{ $t('home.searchBtn') }}
-                        </button>
-                    </div>
-
-                    <div v-if="addressSearchLoading" class="address-search-status">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <span>Manzil qidirilmoqda...</span>
-                    </div>
-
-                    <div v-else-if="addressSuggestions.length" class="address-suggestions">
-                        <button
-                            v-for="option in addressSuggestions"
-                            :key="option.id"
-                            class="address-suggestion"
-                            @click="selectAddressSuggestion(option)"
-                        >
-                            <strong>{{ option.name }}</strong>
-                            <span>{{ option.label }}</span>
-                        </button>
-                    </div>
-
-                    <div v-else-if="addressQuery.trim() && !addressDraft" class="address-search-status empty">
-                        <i class="fas fa-map-signs"></i>
-                        <span>Manzil topilmadi. Boshqa variantni kiriting.</span>
-                    </div>
-
-                    <div class="address-modal-toolbar">
-                        <button class="toolbar-btn" @click="useCurrentLocationInModal" :disabled="locationLoading">
-                            <i :class="locationLoading ? 'fas fa-spinner fa-spin' : 'fas fa-crosshairs'"></i>
-                            <span>{{ $t('home.gpsBtn') }}</span>
-                        </button>
-                        <span class="toolbar-note">{{ selectedMapHint }}</span>
-                    </div>
-
-                    <div class="address-map-shell">
-                        <div id="home-address-map" class="address-map"></div>
-                    </div>
-
-                    <div v-if="addressDraft" class="address-modal-footer">
-                        <div class="address-preview">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <div>
-                                <strong>{{ addressDraft.label }}</strong>
-                                <span>{{ addressDraft.lat.toFixed(5) }}, {{ addressDraft.lng.toFixed(5) }}</span>
-                            </div>
-                        </div>
-                        <button class="address-apply-btn" @click="applySelectedAddress">
-                            {{ $t('form.save') }}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </transition>
 
         <!-- Footer -->
         <footer class="footer">
@@ -351,7 +132,11 @@ import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '../stores/auth'
 import api from '../axios'
 import { resolveImageUrl } from '../utils/imageUrl'
-import LanguageSwitcher from '../components/LanguageSwitcher.vue'
+import HomeNavbar from '../components/home/HomeNavbar.vue'
+import HomePromoSlider from '../components/home/HomePromoSlider.vue'
+import HomeOrderToolbar from '../components/home/HomeOrderToolbar.vue'
+import HomeRestaurantCard from '../components/home/HomeRestaurantCard.vue'
+import HomeAddressModal from '../components/home/HomeAddressModal.vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
@@ -1343,426 +1128,10 @@ onBeforeUnmount(() => {
 
 .page { min-height: 100vh; background: #f4f5f7; font-family: 'Segoe UI', sans-serif; }
 
-/* NAVBAR */
-.navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 32px;
-    height: 64px;
-    background: white;
-    box-shadow: 0 1px 0 #e8e8e8;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-}
-.nav-brand { display: flex; align-items: center; gap: 10px; }
-.nav-discovery {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    margin: 0 20px;
-}
-.brand-icon {
-    width: 36px; height: 36px;
-    background: linear-gradient(135deg, #1D9E75, #0F6E56);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    color: white; font-size: 16px;
-}
-.brand-name { font-size: 18px; font-weight: 700; color: #1a1a1a; }
-.brand-accent { color: #1D9E75; }
-.nav-right { display: flex; align-items: center; gap: 10px; }
-.btn-login {
-    display: flex; align-items: center; gap: 6px;
-    padding: 9px 18px;
-    background: #1D9E75;
-    color: white;
-    border-radius: 10px;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    transition: background 0.2s;
-}
-.btn-login:hover { background: #0F6E56; }
-
-/* HERO */
-.hero {
-    background: linear-gradient(135deg, #0F6E56 0%, #1D9E75 50%, #5DCAA5 100%);
-    padding: 60px 32px 80px;
-    position: relative;
-    overflow: hidden;
-}
-.hero-content { max-width: 600px; margin: 0 auto; text-align: center; position: relative; z-index: 2; }
-.hero-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: rgba(255,255,255,0.2);
-    color: white;
-    padding: 6px 16px;
-    border-radius: 20px;
-    font-size: 13px;
-    margin-bottom: 20px;
-}
-.hero-title {
-    font-size: 42px;
-    font-weight: 800;
-    color: white;
-    line-height: 1.15;
-    margin-bottom: 14px;
-}
-.hero-highlight {
-    background: rgba(255,255,255,0.25);
-    padding: 0 8px;
-    border-radius: 8px;
-}
-.hero-sub { font-size: 16px; color: rgba(255,255,255,0.85); margin-bottom: 28px; }
-
-.search-wrap { margin-bottom: 22px; }
-.search-box {
-    display: flex; align-items: center;
-    background: white;
-    border-radius: 14px;
-    padding: 6px 6px 6px 16px;
-    gap: 8px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-}
-.search-icon { font-size: 16px; color: #aaa; }
-.nav-search-box {
-    flex: 1;
-    max-width: 420px;
-    min-height: 46px;
-    box-shadow: none;
-    border-radius: 14px;
-    background: #ffffff;
-    border: 1px solid #d9ede6;
-}
-.search-input {
-    flex: 1; border: none; outline: none;
-    font-size: 15px; padding: 8px 0;
-    color: #1a1a1a; background: transparent;
-}
-.address-search-status {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 12px;
-    padding: 12px 14px;
-    border-radius: 14px;
-    background: #f5fbf8;
-    color: #2b6b57;
-    font-size: 14px;
-}
-.address-search-status.empty {
-    background: #fff7eb;
-    color: #9a6100;
-}
-.address-trigger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    min-width: 220px;
-    padding: 0 18px;
-    border: 1px solid #168b67;
-    border-radius: 16px;
-    background: #1D9E75;
-    color: white;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 8px 20px rgba(15,110,86,0.22);
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-.nav-address-trigger {
-    min-width: 190px;
-    min-height: 46px;
-    border-radius: 14px;
-    box-shadow: none;
-}
-.address-trigger:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 12px 28px rgba(15,110,86,0.28);
-    background: #0F6E56;
-}
-.address-trigger span {
-    max-width: 160px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.hero-stats {
-    display: flex; align-items: center; justify-content: center; gap: 20px;
-}
-.stat { text-align: center; color: white; }
-.stat strong { display: block; font-size: 20px; font-weight: 700; }
-.stat span { font-size: 12px; opacity: 0.8; }
-.stat-divider { width: 1px; height: 32px; background: rgba(255,255,255,0.3); }
-
-/* Decorations */
-.hero-decoration { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; }
-.deco-circle {
-    position: absolute; border-radius: 50%;
-    background: rgba(255,255,255,0.07);
-}
-.deco-1 { width: 300px; height: 300px; top: -100px; right: -80px; }
-.deco-2 { width: 200px; height: 200px; bottom: -60px; left: -40px; }
-.deco-3 { width: 150px; height: 150px; top: 30px; left: 20%; }
-
 /* MAIN */
 .main { max-width: 1200px; margin: 18px auto 0; padding: 0 24px 40px; position: relative; z-index: 3; }
 
-.promo-slider {
-    position: relative;
-    margin-bottom: 14px;
-}
-.promo-slider-window {
-    overflow: hidden;
-    border-radius: 20px;
-}
-.promo-slider-track {
-    display: flex;
-    transition: transform 0.4s ease;
-}
-.promo-slide {
-    min-width: 100%;
-    min-height: 190px;
-    border-radius: 20px;
-    padding: 26px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    color: white;
-    box-shadow: 0 10px 28px rgba(11, 47, 39, 0.22);
-}
-.promo-slide-content {
-    max-width: 70%;
-}
-.promo-chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 5px 12px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.2);
-    font-size: 12px;
-    font-weight: 700;
-    margin-bottom: 10px;
-}
-.promo-slide h2 {
-    font-size: 30px;
-    line-height: 1.12;
-    margin-bottom: 8px;
-}
-.promo-slide p {
-    font-size: 14px;
-    opacity: 0.92;
-}
-.promo-slide-icon {
-    width: 94px;
-    height: 94px;
-    border-radius: 26px;
-    background: rgba(255, 255, 255, 0.18);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 38px;
-}
-
-.slider-nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    border: none;
-    background: rgba(13, 21, 19, 0.55);
-    color: #fff;
-    cursor: pointer;
-    z-index: 2;
-}
-.slider-nav:hover {
-    background: rgba(13, 21, 19, 0.75);
-}
-.slider-prev { left: -18px; }
-.slider-next { right: -18px; }
-
-.promo-dots {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 20px;
-}
-.promo-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
-    border: none;
-    background: #c5d8d1;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.promo-dot.active {
-    width: 20px;
-    background: #1D9E75;
-}
-
-.order-toolbar {
-    background: #ffffff;
-    border-radius: 18px;
-    padding: 16px;
-    margin-bottom: 18px;
-    box-shadow: 0 3px 12px rgba(12, 38, 32, 0.08);
-}
-.toolbar-title {
-    font-size: 34px;
-    line-height: 1.05;
-    margin-bottom: 14px;
-    color: #172b26;
-    font-weight: 800;
-}
-.toolbar-actions {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-}
-.toolbar-chips {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-.toolbar-chip {
-    border: 1px solid #dce8e3;
-    background: #f9fcfb;
-    color: #35544c;
-    border-radius: 999px;
-    padding: 9px 14px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.toolbar-chip.active,
-.toolbar-chip:hover {
-    background: #e8f6f1;
-    border-color: #83cdb6;
-    color: #0f6e56;
-}
-.more-chip i {
-    font-size: 11px;
-    margin-left: 6px;
-}
-
-.dropdown-wrap {
-    position: relative;
-}
-.dropdown-panel {
-    position: absolute;
-    top: calc(100% + 8px);
-    left: 0;
-    width: 220px;
-    max-height: 320px;
-    overflow: auto;
-    padding: 8px;
-    border-radius: 16px;
-    background: #fff;
-    box-shadow: 0 20px 45px rgba(11, 41, 34, 0.18);
-    border: 1px solid #e0ece7;
-    z-index: 20;
-}
-.dropdown-option {
-    width: 100%;
-    border: none;
-    border-radius: 10px;
-    text-align: left;
-    background: transparent;
-    padding: 10px 12px;
-    color: #305047;
-    cursor: pointer;
-}
-.dropdown-option:hover {
-    background: #eef8f4;
-}
-
-.sorting-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    border: 1px solid #dce8e3;
-    background: #f9fcfb;
-    color: #27473e;
-    border-radius: 12px;
-    padding: 10px 14px;
-    font-size: 15px;
-    cursor: pointer;
-}
-.sorting-chip:hover {
-    border-color: #83cdb6;
-}
-.sorting-panel {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    width: 300px;
-    border-radius: 18px;
-    background: #fff;
-    box-shadow: 0 20px 45px rgba(11, 41, 34, 0.2);
-    border: 1px solid #e0ece7;
-    padding: 14px;
-    z-index: 22;
-}
-.sorting-panel h3 {
-    font-size: 29px;
-    line-height: 1.1;
-    margin-bottom: 12px;
-    color: #203c35;
-}
-.sorting-option {
-    width: 100%;
-    border: none;
-    background: transparent;
-    border-radius: 10px;
-    padding: 9px 6px;
-    color: #3a564f;
-    font-size: 16px;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.sorting-option:hover {
-    background: #eef8f4;
-}
-.sorting-option .selected {
-    color: #1D9E75;
-}
-.sorting-apply-btn {
-    width: 100%;
-    margin-top: 10px;
-    min-height: 46px;
-    border-radius: 12px;
-    border: none;
-    background: #1D9E75;
-    color: white;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.menu-fade-enter-active,
-.menu-fade-leave-active {
-    transition: opacity 0.18s ease, transform 0.18s ease;
-}
-.menu-fade-enter-from,
-.menu-fade-leave-to {
-    opacity: 0;
-    transform: translateY(-4px);
-}
-
+/* SECTION HEADER */
 .section-header {
     display: flex; justify-content: space-between; align-items: flex-end;
     margin-bottom: 20px;
@@ -1786,13 +1155,6 @@ onBeforeUnmount(() => {
     font-size: 13px;
     font-weight: 600;
 }
-.filter-tabs { display: flex; gap: 6px; }
-.filter-tab {
-    padding: 6px 14px; border-radius: 8px; font-size: 13px;
-    border: 1px solid #e8e8e8; background: white; cursor: pointer;
-    color: #666; transition: all 0.2s;
-}
-.filter-tab.active { background: #1D9E75; color: white; border-color: #1D9E75; }
 
 /* SKELETON */
 .loading-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
@@ -1800,9 +1162,7 @@ onBeforeUnmount(() => {
 .skeleton-img { height: 180px; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
 .skeleton-body { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
 .skeleton-line { height: 12px; background: #f0f0f0; border-radius: 6px; }
-.w70 { width: 70%; }
-.w90 { width: 90%; }
-.w50 { width: 50%; }
+.w70 { width: 70%; } .w90 { width: 90%; } .w50 { width: 50%; }
 @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 
 /* EMPTY */
@@ -1814,6 +1174,7 @@ onBeforeUnmount(() => {
 /* GRID */
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
 
+/* LOAD MORE */
 .load-more-sentinel {
     display: flex;
     justify-content: center;
@@ -1821,7 +1182,6 @@ onBeforeUnmount(() => {
     min-height: 72px;
     padding: 12px 0 6px;
 }
-
 .load-more-status {
     display: inline-flex;
     align-items: center;
@@ -1833,57 +1193,7 @@ onBeforeUnmount(() => {
     color: #4b5563;
     box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
 }
-
-.load-more-status.done {
-    color: #0f6e56;
-}
-
-/* CARD */
-.card {
-    background: white;
-    border-radius: 16px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: transform 0.25s, box-shadow 0.25s;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-.card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(0,0,0,0.12); }
-
-.card-img-wrap { position: relative; height: 190px; overflow: hidden; }
-.card-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
-.card:hover .card-img { transform: scale(1.05); }
-.card-no-img {
-    width: 100%; height: 100%;
-    background: linear-gradient(135deg, #f0f0f0, #e8e8e8);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 40px; color: #ccc;
-}
-.card-badge {
-    position: absolute; top: 12px; left: 12px;
-    background: #1D9E75; color: white;
-    padding: 4px 10px; border-radius: 20px;
-    font-size: 11px; font-weight: 500;
-    display: flex; align-items: center; gap: 4px;
-}
-.card-badge .fa-circle { font-size: 6px; }
-
-.card-body { padding: 16px; }
-.card-title { font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px; }
-.card-desc {
-    font-size: 13px; color: #777; margin-bottom: 12px;
-    display: -webkit-box; -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5;
-}
-.card-info { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-.info-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #555; }
-.info-item i { color: #1D9E75; font-size: 11px; width: 14px; }
-.card-cta {
-    display: flex; justify-content: space-between; align-items: center;
-    padding-top: 12px;
-    border-top: 1px solid #f0f0f0;
-    font-size: 13px; font-weight: 600; color: #1D9E75;
-}
+.load-more-status.done { color: #0f6e56; }
 
 /* FOOTER */
 .footer { background: #1a1a1a; padding: 24px; margin-top: 20px; }
@@ -1892,346 +1202,20 @@ onBeforeUnmount(() => {
 .footer-brand i { color: #1D9E75; }
 .footer-copy { font-size: 13px; color: #666; }
 
-/* FILTERS */
-.filters-card {
-    background: white; border-radius: 16px;
-    padding: 20px; margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-.filters-header {
-    display: flex; justify-content: space-between;
-    align-items: center; margin-bottom: 16px;
-}
-.filters-header h3 {
-    font-size: 15px; font-weight: 700; color: #1a1a1a;
-    display: flex; align-items: center; gap: 8px;
-}
-.filters-header h3 i { color: #1D9E75; }
-.clear-btn {
-    display: flex; align-items: center; gap: 4px;
-    padding: 6px 12px; background: #FCEBEB;
-    color: #A32D2D; border: none; border-radius: 8px;
-    font-size: 12px; cursor: pointer;
-}
-.filters-grid {
-    display: grid; grid-template-columns: repeat(4, 1fr);
-    gap: 16px; margin-bottom: 12px;
-}
-.filter-item { display: flex; flex-direction: column; gap: 6px; }
-.filter-label {
-    font-size: 12px; font-weight: 600; color: #666;
-    display: flex; align-items: center; gap: 5px;
-}
-.filter-label i { color: #1D9E75; font-size: 11px; }
-.filter-select {
-    padding: 9px 12px; border: 1.5px solid #e8e8e8;
-    border-radius: 10px; font-size: 13px; outline: none;
-    background: white; color: #1a1a1a; cursor: pointer;
-    transition: border 0.2s;
-}
-.filter-select:focus { border-color: #1D9E75; }
-
-/* PRICE FILTER */
-.price-filter { display: flex; gap: 6px; }
-.price-btn {
-    flex: 1; padding: 8px 4px;
-    border: 1.5px solid #e8e8e8;
-    border-radius: 8px; background: white;
-    font-size: 13px; font-weight: 600; color: #888;
-    cursor: pointer; transition: all 0.2s;
-}
-.price-btn.active {
-    border-color: #1D9E75; background: #E1F5EE; color: #0F6E56;
-}
-.price-btn:hover { border-color: #1D9E75; }
-
-/* ACTIVE FILTERS */
-.active-filters {
-    display: flex; flex-wrap: wrap; gap: 8px;
-    padding-top: 12px; border-top: 1px solid #f0f0f0;
-}
-.filter-tag {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: #E1F5EE; color: #0F6E56;
-    padding: 5px 12px; border-radius: 20px; font-size: 13px;
-}
-.filter-tag i { cursor: pointer; font-size: 10px; }
-.filter-tag i:hover { color: #E24B4A; }
-
-/* CARD - cuisine badge */
-.card-cuisine {
-    display: inline-flex; align-items: center; gap: 4px;
-    background: #f0f0f0; color: #555;
-    padding: 3px 8px; border-radius: 6px;
-    font-size: 11px; margin-bottom: 6px;
-}
-
-/* SORT */
-.sort-wrap { display: flex; align-items: center; }
-.sort-select {
-    padding: 8px 12px; border: 1.5px solid #e8e8e8;
-    border-radius: 10px; font-size: 13px;
-    outline: none; background: white; cursor: pointer;
-}
-
-/* DISTANCE BADGE */
-.distance-badge {
-    position: absolute; top: 12px; right: 12px;
-    background: rgba(0,0,0,0.6); color: white;
-    padding: 4px 10px; border-radius: 20px;
-    font-size: 11px; font-weight: 500;
-    display: flex; align-items: center; gap: 4px;
-}
-
-/* ADDRESS MODAL */
-.address-modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(11, 37, 30, 0.36);
-    backdrop-filter: blur(4px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    z-index: 300;
-}
-.address-modal {
-    width: min(980px, 100%);
-    background: #ffffff;
-    color: #18322b;
-    border-radius: 28px;
-    padding: 26px;
-    box-shadow: 0 22px 70px rgba(8, 52, 41, 0.2);
-}
-.address-modal-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-    margin-bottom: 18px;
-}
-.address-modal-head h3 {
-    font-size: 20px;
-    font-weight: 800;
-    margin-bottom: 6px;
-}
-.address-modal-head p {
-    color: #6c7f79;
-    font-size: 13px;
-}
-.modal-close-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 1px solid #d8ebe4;
-    background: #f7fcfa;
-    color: #5d746d;
-    cursor: pointer;
-}
-.address-modal-search-row {
-    display: grid;
-    grid-template-columns: 1fr 140px;
-    gap: 10px;
-    margin-bottom: 14px;
-}
-.address-modal-input-wrap {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: #f8fcfb;
-    border: 1px solid #d4e8e2;
-    border-radius: 16px;
-    padding: 0 16px;
-    min-height: 56px;
-}
-.address-modal-input-wrap i {
-    color: #7da098;
-}
-.address-modal-input {
-    width: 100%;
-    border: none;
-    outline: none;
-    background: transparent;
-    color: #17322a;
-    font-size: 14px;
-}
-.address-modal-input::placeholder {
-    color: #8aa59e;
-}
-.address-confirm-btn,
-.address-apply-btn {
-    border: 1px solid #168b67;
-    border-radius: 16px;
-    background: #1D9E75;
-    color: white;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-}
-.address-confirm-btn:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-}
-.address-suggestions {
-    display: grid;
-    gap: 8px;
-    margin-bottom: 14px;
-    max-height: 180px;
-    overflow: auto;
-}
-.address-suggestion {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-    padding: 12px 14px;
-    border-radius: 14px;
-    border: 1px solid #d6ebe4;
-    background: #f9fdfb;
-    color: #17332b;
-    cursor: pointer;
-    text-align: left;
-}
-.address-suggestion:hover {
-    border-color: #1D9E75;
-    background: #eef8f4;
-}
-.address-suggestion span {
-    color: #68867d;
-    font-size: 12px;
-}
-.address-modal-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 14px;
-}
-.toolbar-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    border-radius: 999px;
-    border: 1px solid #cde5dd;
-    background: #f7fcfa;
-    color: #0f6e56;
-    cursor: pointer;
-}
-.toolbar-btn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-}
-.toolbar-note {
-    color: #5c7a72;
-    font-size: 13px;
-}
-.address-map-shell {
-    overflow: hidden;
-    border-radius: 22px;
-    border: 1px solid #d7ebe4;
-}
-.address-map {
-    width: 100%;
-    height: 340px;
-    background: #eef5f2;
-}
-.address-modal-footer {
-    margin-top: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-}
-.address-preview {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-.address-preview i {
-    color: #1D9E75;
-    font-size: 18px;
-}
-.address-preview strong {
-    display: block;
-    font-size: 14px;
-}
-.address-preview span {
-    color: #6f8a83;
-    font-size: 12px;
-}
-.address-apply-btn {
-    min-width: 150px;
-    min-height: 48px;
-    background: #0F6E56;
-    color: white;
-}
-.modal-fade-enter-active,
-.modal-fade-leave-active {
-    transition: opacity 0.2s ease;
-}
-.modal-fade-enter-from,
-.modal-fade-leave-to {
-    opacity: 0;
-}
-
 /* Mobile */
 @media (max-width: 768px) {
-    .main { margin-top: 12px; }
-    .promo-slide { min-height: 160px; padding: 20px; }
-    .promo-slide h2 { font-size: 22px; }
-    .promo-slide-icon { width: 72px; height: 72px; font-size: 28px; border-radius: 20px; }
-    .slider-prev { left: 8px; }
-    .slider-next { right: 8px; }
-    .toolbar-title { font-size: 30px; }
-    .toolbar-actions { flex-direction: column; align-items: stretch; }
-    .sorting-panel { right: 0; left: 0; width: 100%; }
-    .dropdown-panel { width: 100%; max-width: 280px; }
-    .filters-grid { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 480px) {
-    .promo-slide-content { max-width: 100%; }
-    .promo-slide-icon { display: none; }
-    .toolbar-title { font-size: 26px; }
-    .filters-grid { grid-template-columns: 1fr; }
+    .main { padding: 0 12px 32px; margin-top: 10px; }
+    .section-header { flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px 16px; }
+    .section-title { font-size: 16px; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+    .footer-inner { flex-direction: column; gap: 12px; text-align: center; }
+    .footer { padding: 20px 16px; }
 }
 
-/* MOBILE */
-@media (max-width: 768px) {
-    .navbar { padding: 0 16px; }
-    .nav-discovery {
-        order: 3;
-        width: 100%;
-        margin: 12px 0 0;
-        flex-direction: column;
-    }
-    .nav-search-box,
-    .nav-address-trigger {
-        width: 100%;
-        max-width: none;
-    }
-    .navbar {
-        height: auto;
-        flex-wrap: wrap;
-        padding-top: 12px;
-        padding-bottom: 12px;
-    }
-    .hero { padding: 40px 16px 60px; }
-    .hero-title { font-size: 28px; }
-    .main { padding: 0 12px 32px; }
-    .section-header { flex-direction: column; align-items: flex-start; gap: 12px; }
-    .grid { grid-template-columns: 1fr; }
-    .hero-stats { gap: 12px; }
-    .footer-inner { flex-direction: column; gap: 12px; text-align: center; }
-    .address-modal { padding: 18px; border-radius: 22px; }
-    .address-modal-search-row { grid-template-columns: 1fr; }
-    .address-modal-toolbar,
-    .address-modal-footer { flex-direction: column; align-items: stretch; }
-    .address-map { height: 300px; }
-}
 @media (max-width: 480px) {
-    .hero-title { font-size: 24px; }
-    .nav-right { width: 100%; justify-content: space-between; }
-    .address-modal-overlay { padding: 12px; }
+    .main { padding: 0 10px 24px; margin-top: 8px; }
+    .grid { grid-template-columns: 1fr; gap: 12px; }
+    .section-header { border-radius: 12px; }
+    .section-sort-pill { align-self: flex-start; }
 }
 </style>

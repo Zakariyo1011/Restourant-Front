@@ -1,0 +1,195 @@
+<template>
+    <div class="promo-slider-wrap">
+        <!-- Arrows sit on the wrapper, overlapping the window edges -->
+        <button class="slider-nav slider-prev" @click="$emit('prev')" aria-label="Previous">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="slider-nav slider-next" @click="$emit('next')" aria-label="Next">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+
+        <div class="promo-slider-window">
+            <div class="promo-slider-track" :style="promoTrackStyle">
+                <article
+                    v-for="slide in promoSlides"
+                    :key="slide.id"
+                    class="promo-slide"
+                    :style="{ background: slide.bg }"
+                >
+                    <div class="promo-slide-content">
+                        <span class="promo-chip">{{ slide.badge }}</span>
+                        <h2>{{ slide.title }}</h2>
+                        <p>{{ slide.subtitle }}</p>
+                    </div>
+                    <div class="promo-slide-icon">
+                        <i :class="slide.icon"></i>
+                    </div>
+                </article>
+            </div>
+        </div>
+
+        <div class="promo-dots">
+            <button
+                v-for="(slide, index) in promoSlides"
+                :key="slide.id"
+                type="button"
+                class="promo-dot"
+                :class="{ active: index === currentPromoIndex }"
+                @click="$emit('go', index)"
+            ></button>
+        </div>
+    </div>
+</template>
+
+<script setup>
+defineProps({
+    promoSlides:       { type: Array,  default: () => [] },
+    currentPromoIndex: { type: Number, default: 0 },
+    promoTrackStyle:   { type: Object, default: () => ({}) },
+})
+defineEmits(['prev', 'next', 'go'])
+</script>
+
+<style scoped>
+.promo-slider-wrap {
+    position: relative;
+    margin-bottom: 6px;
+    /* Horizontal padding makes room for the protruding arrows */
+    padding: 0 20px;
+}
+
+.promo-slider-window {
+    overflow: hidden;
+    border-radius: 20px;
+}
+
+.promo-slider-track {
+    display: flex;
+    will-change: transform;
+    transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.promo-slide {
+    flex: 0 0 100%;
+    width: 100%;
+    min-height: 200px;
+    padding: 28px 32px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    color: white;
+}
+
+.promo-slide-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.promo-slide-icon {
+    flex-shrink: 0;
+    width: 90px;
+    height: 90px;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+}
+
+.promo-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 14px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.22);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    margin-bottom: 12px;
+    backdrop-filter: blur(4px);
+}
+
+.promo-slide h2 {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 8px;
+}
+.promo-slide p {
+    font-size: 14px;
+    opacity: 0.9;
+    line-height: 1.5;
+}
+
+/* Arrows on the wrapper, overlapping the slider window edges */
+.slider-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-60%);
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(240, 248, 245, 0.9);
+    backdrop-filter: blur(6px);
+    color: #555;
+    font-size: 13px;
+    cursor: pointer;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    transition: background 0.2s, transform 0.2s;
+}
+.slider-nav:hover {
+    background: #fff;
+    transform: translateY(-60%) scale(1.08);
+}
+.slider-prev { left: 0; }
+.slider-next { right: 0; }
+
+.promo-dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 0 8px;
+}
+.promo-dot {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    border-radius: 999px;
+    border: none;
+    background: #c5d8d1;
+    cursor: pointer;
+    transition: all 0.25s;
+}
+.promo-dot.active {
+    width: 22px;
+    background: #1D9E75;
+}
+
+@media (max-width: 768px) {
+    .promo-slide      { min-height: 160px; padding: 20px 22px; }
+    .promo-slide h2   { font-size: 22px; }
+    .promo-slide p    { font-size: 13px; }
+    .promo-slide-icon { width: 68px; height: 68px; font-size: 26px; border-radius: 18px; }
+    .slider-nav       { width: 32px; height: 32px; font-size: 11px; }
+    .slider-prev      { left: 8px; }
+    .slider-next      { right: 8px; }
+}
+
+@media (max-width: 480px) {
+    .promo-slider-window { border-radius: 16px; }
+    .promo-slide         { min-height: 130px; padding: 16px 18px; }
+    .promo-slide-icon    { display: none; }
+    .promo-slide h2      { font-size: 19px; }
+    .promo-chip          { font-size: 11px; padding: 4px 10px; margin-bottom: 8px; }
+}
+</style>
