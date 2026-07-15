@@ -15,18 +15,43 @@
 
                 <div class="dropdown-wrap" ref="moreMenuRef">
                     <button class="toolbar-chip more-chip" :class="{ active: showMoreMenu }" @click="$emit('toggleMoreMenu')">
-                        More <i class="fas fa-chevron-down"></i>
+                        {{ selectedFoodTypeLabel ? `More · ${selectedFoodTypeLabel}` : 'More' }} <i class="fas fa-chevron-down"></i>
                     </button>
                     <transition name="menu-fade">
                         <div v-if="showMoreMenu" class="dropdown-panel">
-                            <button
-                                v-for="category in moreCategories"
-                                :key="category.key"
-                                class="dropdown-option"
-                                @click="$emit('selectCategory', category.key, true)"
-                            >
-                                {{ category.label }}
-                            </button>
+                            <div class="food-search-block" @click.stop>
+                                <div class="food-search-input-wrap">
+                                    <i class="fas fa-search"></i>
+                                    <input
+                                        v-model="foodTypeQuery"
+                                        type="text"
+                                        class="food-search-input"
+                                        placeholder="Ovqat turini qidiring"
+                                    />
+                                </div>
+
+                                <div class="food-type-list">
+                                    <button
+                                        class="food-type-option"
+                                        :class="{ active: !selectedFoodType }"
+                                        @click="selectFoodTypeOption('', true)"
+                                    >
+                                        Barchasi
+                                    </button>
+                                    <button
+                                        v-for="foodType in filteredFoodTypes"
+                                        :key="foodType.slug"
+                                        class="food-type-option"
+                                        :class="{ active: selectedFoodType === foodType.slug }"
+                                        @click="selectFoodTypeOption(foodType.slug, true)"
+                                    >
+                                        {{ foodType.label }}
+                                    </button>
+                                    <div v-if="foodTypeQuery && !filteredFoodTypes.length" class="food-type-empty">
+                                        Mos ovqat turi topilmadi
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </transition>
                 </div>
@@ -61,17 +86,38 @@
 </template>
 
 <script setup>
-defineProps({
+import { computed, ref } from 'vue'
+
+const foodTypeQuery = ref('')
+
+const props = defineProps({
     quickCategories: { type: Array, default: () => [] },
-    moreCategories:  { type: Array, default: () => [] },
+    foodTypes:       { type: Array, default: () => [] },
     sortingOptions:  { type: Array, default: () => [] },
     selectedCuisine: { type: String, default: '' },
+    selectedFoodType: { type: String, default: '' },
+    selectedFoodTypeLabel: { type: String, default: '' },
     selectedSorting: { type: String, default: 'trust' },
     showMoreMenu:    { type: Boolean, default: false },
     showSortingMenu: { type: Boolean, default: false },
 })
 
-defineEmits(['selectCategory', 'toggleMoreMenu', 'toggleSortingMenu', 'selectSorting', 'applySorting'])
+const emit = defineEmits(['selectCategory', 'selectFoodType', 'toggleMoreMenu', 'toggleSortingMenu', 'selectSorting', 'applySorting'])
+
+const filteredFoodTypes = computed(() => {
+    const query = foodTypeQuery.value.trim().toLowerCase()
+    if (!query) return props.foodTypes
+
+    return props.foodTypes.filter((foodType) => {
+        const haystacks = [foodType.label, foodType.slug, ...(foodType.keywords || [])]
+        return haystacks.some(value => String(value || '').toLowerCase().includes(query))
+    })
+})
+
+const selectFoodTypeOption = (slug, closeMenu = false) => {
+    emit('selectFoodType', slug, closeMenu)
+    foodTypeQuery.value = ''
+}
 </script>
 
 <style scoped>
@@ -124,7 +170,7 @@ defineEmits(['selectCategory', 'toggleMoreMenu', 'toggleSortingMenu', 'selectSor
     position: absolute;
     top: calc(100% + 8px);
     left: 0;
-    width: 220px;
+    width: 280px;
     max-height: 320px;
     overflow: auto;
     padding: 8px;
@@ -134,17 +180,61 @@ defineEmits(['selectCategory', 'toggleMoreMenu', 'toggleSortingMenu', 'selectSor
     border: 1px solid #e0ece7;
     z-index: 20;
 }
-.dropdown-option {
+.food-search-block {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+.food-search-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #dce8e3;
+    border-radius: 12px;
+    background: #f9fcfb;
+    padding: 0 12px;
+}
+.food-search-input-wrap i {
+    color: #7a928b;
+    font-size: 13px;
+}
+.food-search-input {
     width: 100%;
     border: none;
-    border-radius: 10px;
-    text-align: left;
+    outline: none;
     background: transparent;
-    padding: 10px 12px;
-    color: #305047;
-    cursor: pointer;
+    color: #27473e;
+    min-height: 40px;
+    font-size: 14px;
 }
-.dropdown-option:hover { background: #eef8f4; }
+.food-type-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.food-type-option {
+    border: 1px solid #dce8e3;
+    background: #f9fcfb;
+    color: #35544c;
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.food-type-option.active,
+.food-type-option:hover {
+    background: #e8f6f1;
+    border-color: #83cdb6;
+    color: #0f6e56;
+}
+.food-type-empty {
+    width: 100%;
+    color: #6f847d;
+    font-size: 13px;
+    padding: 4px 2px;
+}
 
 .sorting-chip {
     display: inline-flex;

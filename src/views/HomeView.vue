@@ -22,13 +22,16 @@
 
     <HomeOrderToolbar
         :quick-categories="quickCategories"
-        :more-categories="moreCategories"
+        :food-types="localizedFoodTypes"
         :sorting-options="sortingOptions"
         :selected-cuisine="selectedCuisineQuick"
+        :selected-food-type="selectedFoodTypeQuick"
+        :selected-food-type-label="selectedFoodTypeLabel"
         :selected-sorting="selectedSortingQuick"
         :show-more-menu="showMoreMenu"
         :show-sorting-menu="showSortingMenu"
         @selectCategory="(key, close) => selectQuickCategory(key, close)"
+        @selectFoodType="(slug, close) => selectFoodType(slug, close)"
         @toggleMoreMenu="toggleMoreMenu"
         @toggleSortingMenu="toggleSortingMenu"
         @selectSorting="selectedSortingQuick = $event"
@@ -177,13 +180,16 @@ const promoInterval = ref(null)
 const currentPromoIndex = ref(0)
 const showMoreMenu = ref(false)
 const showSortingMenu = ref(false)
+const foodTypes = ref([])
 const selectedCuisineQuick = ref('')
+const selectedFoodTypeQuick = ref('')
 const selectedSortingQuick = ref('trust')
 const moreMenuRef = ref(null)
 const sortingMenuRef = ref(null)
 const loadMoreTrigger = ref(null)
 const loadMoreObserver = ref(null)
 const pendingCuisineHydration = ref(false)
+const pendingFoodTypeHydration = ref(false)
 const isHydratingAllPages = ref(false)
 
 const filters = ref({
@@ -287,6 +293,53 @@ const matchesCuisineByText = (restaurant, cuisineKey) => {
     return keywords.some(keyword => text.includes(normalizeSearchText(keyword)))
 }
 
+const matchesFoodTypeByText = (restaurant, foodTypeSlug) => {
+    const text = normalizeSearchText([
+        restaurant?.cuisine_type,
+        restaurant?.name,
+        restaurant?.description,
+        restaurant?.location?.address,
+        restaurant?.address,
+    ].filter(Boolean).join(' '))
+
+    if (!text || !foodTypeSlug) return false
+
+    const option = foodTypes.value.find(item => item.slug === foodTypeSlug)
+    const keywords = option?.keywords?.length ? option.keywords : [foodTypeSlug]
+
+    return keywords.some(keyword => text.includes(normalizeSearchText(keyword)))
+}
+
+const buildFoodTypeKeywords = (foodType) => {
+    const translations = foodType?.translations && typeof foodType.translations === 'object'
+        ? Object.values(foodType.translations)
+        : []
+
+    return [...new Set([
+        foodType?.slug,
+        foodType?.name,
+        ...translations,
+    ].filter(Boolean).map(value => String(value).trim()))]
+}
+
+const localizedFoodTypes = computed(() => {
+    return foodTypes.value.map((foodType) => {
+        const translations = foodType?.translations && typeof foodType.translations === 'object'
+            ? foodType.translations
+            : {}
+
+        return {
+            ...foodType,
+            label: translations[locale.value] || translations.uz || translations.en || foodType.name || foodType.slug,
+            keywords: buildFoodTypeKeywords(foodType),
+        }
+    })
+})
+
+const selectedFoodTypeLabel = computed(() => {
+    return localizedFoodTypes.value.find(item => item.slug === selectedFoodTypeQuick.value)?.label || ''
+})
+
 const getCuisineLabel = (value) => {
     const key = normalizeCuisineValue(value)
     if (key) {
@@ -331,17 +384,6 @@ const quickCategories = [
     { key: 'russian', label: 'Russian' },
 ]
 
-const moreCategories = [
-    { key: 'tajik', label: 'Tajik' },
-    { key: 'kazakh', label: 'Kazakh' },
-    { key: 'kyrgyz', label: 'Kyrgyz' },
-    { key: 'arabic', label: 'Arabic' },
-    { key: 'persian', label: 'Persian' },
-    { key: 'afghan', label: 'Afghan' },
-    { key: 'european', label: 'European' },
-    { key: 'mixed', label: 'Mixed' },
-]
-
 const sortingOptions = [
     { key: 'trust', label: 'I trust you' },
     { key: 'top_rating', label: 'Top rating' },
@@ -363,6 +405,7 @@ const activeSortingLabel = computed(() => sortingLabelsMap[selectedSortingQuick.
 const hasActiveClientFilters = computed(() => {
     return Boolean(
         search.value.trim() ||
+        selectedFoodTypeQuick.value ||
         filters.value.cuisine_type ||
         filters.value.country ||
         filters.value.city ||
@@ -422,6 +465,20 @@ const selectQuickCategory = async (key, closeMenu = false) => {
     }
 
     if (normalizedKey && !locationActive.value && !loading.value && hasMorePages.value) {
+        await ensureAllRestaurantsLoaded()
+    }
+}
+
+const selectFoodType = async (slug, closeMenu = false) => {
+    const normalizedSlug = String(slug || '').trim().toLowerCase()
+    selectedFoodTypeQuick.value = normalizedSlug
+    pendingFoodTypeHydration.value = Boolean(normalizedSlug)
+
+    if (closeMenu) {
+        showMoreMenu.value = false
+    }
+
+    if (normalizedSlug && !locationActive.value && !loading.value && hasMorePages.value) {
         await ensureAllRestaurantsLoaded()
     }
 }
@@ -564,6 +621,11 @@ const filtered = computed(() => {
             ? strictMatched
             : result.filter(r => matchesCuisineByText(r, selectedCuisine))
     }
+
+    if (selectedFoodTypeQuick.value) {
+        result = result.filter(r => matchesFoodTypeByText(r, selectedFoodTypeQuick.value))
+    }
+
     if (filters.value.country) {
         result = result.filter(r => r.country === filters.value.country)
     }
@@ -656,6 +718,21 @@ const fetchRestaurants = async (page = 1) => {
     } finally {
         loading.value = false
         paginationLoading.value = false
+    }
+}
+
+const fetchFoodTypes = async () => {
+    try {
+        const res = await api.get('/food-types')
+        const items = Array.isArray(res?.data?.food_types) ? res.data.food_types : []
+        foodTypes.value = items.map(item => ({
+            ...item,
+            slug: String(item.slug || '').trim().toLowerCase(),
+            translations: item?.translations && typeof item.translations === 'object' ? item.translations : {},
+        }))
+    } catch (error) {
+        console.error(error)
+        foodTypes.value = []
     }
 }
 
@@ -1057,7 +1134,7 @@ onMounted(async () => {
         nextPromoSlide()
     }, 5000)
 
-    await fetchRestaurants(1)
+    await Promise.all([fetchRestaurants(1), fetchFoodTypes()])
     await nextTick()
     setupLoadMoreObserver()
 })
@@ -1068,12 +1145,13 @@ watch([loadMoreTrigger, hasMorePages, locationActive], async () => {
 })
 
 watch([loading, paginationLoading, locationActive, () => filters.value.cuisine_type, hasMorePages], async () => {
-    if (!pendingCuisineHydration.value) {
+    if (!pendingCuisineHydration.value && !pendingFoodTypeHydration.value) {
         return
     }
 
-    if (locationActive.value || !filters.value.cuisine_type) {
+    if (locationActive.value || (!filters.value.cuisine_type && !selectedFoodTypeQuick.value)) {
         pendingCuisineHydration.value = false
+        pendingFoodTypeHydration.value = false
         return
     }
 
@@ -1082,6 +1160,7 @@ watch([loading, paginationLoading, locationActive, () => filters.value.cuisine_t
     }
 
     pendingCuisineHydration.value = false
+    pendingFoodTypeHydration.value = false
     if (hasMorePages.value) {
         await ensureAllRestaurantsLoaded()
     }
