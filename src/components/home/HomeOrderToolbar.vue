@@ -164,6 +164,11 @@ const selectFoodTypeOption = (slug, closeMenu = false) => {
     color: #0f6e56;
 }
 .more-chip i { font-size: 11px; margin-left: 6px; }
+.more-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+}
 
 .dropdown-wrap { position: relative; }
 .dropdown-panel {
@@ -305,10 +310,18 @@ const selectFoodTypeOption = (slug, closeMenu = false) => {
     .order-toolbar { padding: 14px; border-radius: 14px; }
     .toolbar-title { font-size: 26px; margin-bottom: 12px; }
     .toolbar-actions { flex-direction: column; align-items: stretch; gap: 10px; }
-    .toolbar-chips { flex-wrap: wrap; }
+    .toolbar-chips { flex-wrap: wrap; width: 100%; }
+    .toolbar-chips .dropdown-wrap { width: 100%; }
+    .toolbar-chips .more-chip { width: 100%; }
     .sorting-chip { width: 100%; justify-content: center; }
     .sorting-panel { right: 0; left: 0; width: 100%; }
-    .dropdown-panel { width: 100%; max-width: 280px; }
+    .dropdown-panel {
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-width: none;
+        max-height: 280px;
+    }
 }
 
 @media (max-width: 480px) {

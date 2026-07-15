@@ -67,10 +67,10 @@ defineEmits(['update:searchQuery', 'openAddressModal'])
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 32px;
-    height: 64px;
+    padding: 0 24px;
+    min-height: 72px;
     background: white;
-    box-shadow: 0 1px 0 #e8e8e8;
+    border-bottom: 1px solid #e8edf1;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -80,10 +80,10 @@ defineEmits(['update:searchQuery', 'openAddressModal'])
     flex: 1;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 10px;
-    margin: 0 24px;
-    max-width: 780px;
+    justify-content: flex-start;
+    gap: 12px;
+    margin: 0 28px;
+    max-width: 920px;
 }
 .brand-icon {
     width: 36px; height: 36px;
@@ -109,53 +109,56 @@ defineEmits(['update:searchQuery', 'openAddressModal'])
 .btn-login:hover { background: #0F6E56; }
 .search-box {
     display: flex; align-items: center;
-    background: white;
-    border-radius: 14px;
-    padding: 6px 6px 6px 16px;
+    background: #f1f3f4;
+    border-radius: 16px;
+    padding: 0 14px;
     gap: 8px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
 }
 .search-icon { font-size: 16px; color: #aaa; }
 .nav-search-box {
     flex: 1;
-    max-width: 540px;
-    min-height: 46px;
+    max-width: 620px;
+    min-height: 48px;
     box-shadow: none;
-    border-radius: 14px;
+    border-radius: 16px;
+    background: #f1f3f4;
+    border: 1px solid transparent;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+.nav-search-box:focus-within {
     background: #ffffff;
-    border: 1px solid #d9ede6;
+    border-color: #c8d6df;
 }
 .search-input {
     flex: 1; border: none; outline: none;
-    font-size: 15px; padding: 10px 0;
+    font-size: 15px; padding: 12px 0;
     color: #1a1a1a; background: transparent;
 }
+.search-input::placeholder { color: #88949c; }
 .address-trigger {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    min-width: 220px;
+    gap: 8px;
+    min-width: 190px;
     padding: 0 18px;
-    border: 1px solid #168b67;
+    border: 1px solid #148665;
     border-radius: 16px;
     background: #1D9E75;
     color: white;
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 8px 20px rgba(15,110,86,0.22);
-    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 8px 18px rgba(15,110,86,0.2);
+    transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
 }
 .nav-address-trigger {
-    min-width: 190px;
-    min-height: 46px;
-    border-radius: 14px;
-    box-shadow: none;
+    min-height: 48px;
+    border-radius: 16px;
 }
 .address-trigger:hover {
     transform: translateY(-1px);
-    box-shadow: 0 12px 28px rgba(15,110,86,0.28);
+    box-shadow: 0 12px 24px rgba(15,110,86,0.26);
     background: #0F6E56;
 }
 .address-trigger span {
@@ -168,7 +171,7 @@ defineEmits(['update:searchQuery', 'openAddressModal'])
 @media (max-width: 768px) {
     .navbar {
         height: auto;
-        padding: 10px 16px 12px;
+        padding: 10px 14px 12px;
         flex-wrap: wrap;
         gap: 8px;
     }
