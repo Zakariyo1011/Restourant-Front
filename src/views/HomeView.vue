@@ -176,6 +176,7 @@ const modalMarker = ref(null)
 const addressSearchDebounce = ref(null)
 const addressSearchToken = ref(0)
 const reverseLookupToken = ref(0)
+const suppressAddressQueryWatcher = ref(false)
 const promoInterval = ref(null)
 const currentPromoIndex = ref(0)
 const showMoreMenu = ref(false)
@@ -348,7 +349,7 @@ const getCuisineLabel = (value) => {
 
     return value || ''
 }
-const promoSlides = [
+const defaultPromoSlides = [
     {
         id: 1,
         badge: 'Yangi',
@@ -356,6 +357,7 @@ const promoSlides = [
         subtitle: 'Bugungi top restoranlardan maxsus takliflar',
         icon: 'fas fa-fire',
         bg: 'linear-gradient(120deg, #0f6e56 0%, #1d9e75 100%)',
+        image: null,
     },
     {
         id: 2,
@@ -364,6 +366,7 @@ const promoSlides = [
         subtitle: 'Yaqin atrofdagi restoranlar 20-30 daqiqada',
         icon: 'fas fa-bolt',
         bg: 'linear-gradient(120deg, #155c9a 0%, #1d89e4 100%)',
+        image: null,
     },
     {
         id: 3,
@@ -372,8 +375,37 @@ const promoSlides = [
         subtitle: 'Eng ko‘p buyurtma qilingan taomlarni sinab ko‘ring',
         icon: 'fas fa-star',
         bg: 'linear-gradient(120deg, #7a2f8f 0%, #bc4de0 100%)',
+        image: null,
     },
 ]
+
+const promoSlides = ref([...defaultPromoSlides])
+
+const fetchPromoSlides = async () => {
+    try {
+        const res = await api.get('/promo-slides')
+        const items = Array.isArray(res?.data) ? res.data : []
+
+        promoSlides.value = items.length
+            ? items.map((slide, index) => ({
+                id: slide.id ?? index + 1,
+                badge: slide.badge || '',
+                title: slide.title || '',
+                subtitle: slide.subtitle || '',
+                icon: slide.icon || 'fas fa-fire',
+                bg: slide.bg || slide.bg_color || defaultPromoSlides[index % defaultPromoSlides.length].bg,
+                image: slide.image || slide.image_url || null,
+            }))
+            : [...defaultPromoSlides]
+
+        if (currentPromoIndex.value >= promoSlides.value.length) {
+            currentPromoIndex.value = 0
+        }
+    } catch (error) {
+        console.error(error)
+        promoSlides.value = [...defaultPromoSlides]
+    }
+}
 
 const quickCategories = [
     { key: '', label: 'All' },
@@ -438,16 +470,25 @@ const modalHelperText = computed(() => {
 
 const selectedMapHint = computed(() => {
     if (locationError.value) return locationError.value
-    if (addressDraft.value?.label) return addressDraft.value.label
+    if (addressDraft.value?.lat && addressDraft.value?.lng) {
+        return `Tanlangan nuqta: ${addressDraft.value.lat.toFixed(5)}, ${addressDraft.value.lng.toFixed(5)}`
+    }
     return 'Marker ni suring yoki xaritada nuqta bosing'
 })
 
+const setAddressQuerySilently = (value) => {
+    suppressAddressQueryWatcher.value = true
+    addressQuery.value = value || ''
+}
+
 const nextPromoSlide = () => {
-    currentPromoIndex.value = (currentPromoIndex.value + 1) % promoSlides.length
+    const total = promoSlides.value.length || 1
+    currentPromoIndex.value = (currentPromoIndex.value + 1) % total
 }
 
 const prevPromoSlide = () => {
-    currentPromoIndex.value = (currentPromoIndex.value - 1 + promoSlides.length) % promoSlides.length
+    const total = promoSlides.value.length || 1
+    currentPromoIndex.value = (currentPromoIndex.value - 1 + total) % total
 }
 
 const goToPromoSlide = (index) => {
@@ -872,7 +913,7 @@ const syncDraftLabel = async (lat, lng, fallbackLabel, shouldPan = false) => {
         updateMapMarker({ lat, lng, label: resolvedLabel }, false)
 
         if (!addressQuery.value.trim()) {
-            addressQuery.value = resolvedLabel
+            setAddressQuerySilently(resolvedLabel)
         }
     } catch (error) {
         console.error(error)
@@ -925,7 +966,7 @@ const updateMapMarker = ({ lat, lng, label }, shouldPan = true) => {
     }
 
     if (label) {
-        modalMarker.value.bindPopup(`<strong>${label}</strong>`).openPopup()
+        modalMarker.value.bindPopup(`<strong>${label}</strong>`)
     }
 }
 
@@ -1056,7 +1097,7 @@ const initAddressMap = () => {
 const selectAddressSuggestion = (option) => {
     setDraftLocation(option)
     updateMapMarker(option)
-    addressQuery.value = option.label || option.name
+    setAddressQuerySilently(option.label || option.name)
     addressSuggestions.value = []
 }
 
@@ -1099,7 +1140,7 @@ const applySelectedAddress = async () => {
 
             setDraftLocation(option)
             updateMapMarker(option)
-            addressQuery.value = option.label || option.name
+            setAddressQuerySilently(option.label || option.name)
         }
     }
 
@@ -1134,7 +1175,7 @@ onMounted(async () => {
         nextPromoSlide()
     }, 5000)
 
-    await Promise.all([fetchRestaurants(1), fetchFoodTypes()])
+    await Promise.all([fetchRestaurants(1), fetchFoodTypes(), fetchPromoSlides()])
     await nextTick()
     setupLoadMoreObserver()
 })
@@ -1173,6 +1214,11 @@ watch(showAddressModal, async (isOpen) => {
 })
 
 watch(addressQuery, (value) => {
+    if (suppressAddressQueryWatcher.value) {
+        suppressAddressQueryWatcher.value = false
+        return
+    }
+
     clearTimeout(addressSearchDebounce.value)
 
     if (!value.trim()) {

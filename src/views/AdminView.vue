@@ -77,6 +77,99 @@
                 </div>
             </div>
 
+            <!-- Promo Slides Card -->
+            <div class="promo-card">
+                <div class="promo-card-header">
+                    <div class="promo-card-title">
+                        <i class="fas fa-images" style="color:#1D9E75"></i>
+                        Home Slider Boshqaruvi
+                    </div>
+                    <button class="promo-add-btn" @click="openPromoForm(null)">
+                        <i class="fas fa-plus"></i> Yangi slide
+                    </button>
+                </div>
+
+                <div class="promo-slides-list">
+                    <div v-if="promoLoading" class="promo-loading">
+                        <i class="fas fa-spinner fa-spin"></i> Yuklanmoqda...
+                    </div>
+                    <div v-else-if="!promoSlides.length" class="promo-empty">
+                        Hali slide qo'shilmagan
+                    </div>
+                    <div v-else class="promo-items">
+                        <div v-for="slide in promoSlides" :key="slide.id" class="promo-item">
+                            <div class="promo-item-thumb" :style="{ background: slide.bg_color }">
+                                <img v-if="slide.image_path" :src="resolvePromoImage(slide.image_path)" alt="" />
+                                <i v-else class="fas fa-image"></i>
+                            </div>
+                            <div class="promo-item-info">
+                                <span class="promo-item-badge" v-if="slide.badge">{{ slide.badge }}</span>
+                                <strong>{{ slide.title }}</strong>
+                                <p>{{ slide.subtitle }}</p>
+                                <small :class="slide.is_active ? 'text-green' : 'text-gray'">
+                                    {{ slide.is_active ? 'Faol' : 'Nofaol' }}
+                                </small>
+                            </div>
+                            <div class="promo-item-actions">
+                                <button class="btn-icon" @click="openPromoForm(slide)"><i class="fas fa-pen"></i></button>
+                                <button class="btn-icon red" @click="deletePromoSlide(slide.id)"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Promo Form Modal -->
+            <div v-if="promoFormOpen" class="modal-overlay" @click.self="promoFormOpen = false">
+                <div class="modal-box">
+                    <div class="modal-header">
+                        <h3>{{ promoEditId ? 'Slideni tahrirlash' : 'Yangi slide' }}</h3>
+                        <button class="modal-close" @click="promoFormOpen = false"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-row">
+                            <label>Sarlavha *</label>
+                            <input v-model="promoForm.title" class="form-input" placeholder="Masalan: Issiq chegirmalar" />
+                        </div>
+                        <div class="form-row">
+                            <label>Badge (ixtiyoriy)</label>
+                            <input v-model="promoForm.badge" class="form-input" placeholder="Yangi, Top, Tavsiya..." />
+                        </div>
+                        <div class="form-row">
+                            <label>Tavsif (ixtiyoriy)</label>
+                            <input v-model="promoForm.subtitle" class="form-input" placeholder="Qisqa tavsif..." />
+                        </div>
+                        <div class="form-row">
+                            <label>Fon rangi (CSS gradient)</label>
+                            <input v-model="promoForm.bg_color" class="form-input" placeholder="linear-gradient(...)" />
+                        </div>
+                        <div class="form-row">
+                            <label>Tartib raqami</label>
+                            <input v-model.number="promoForm.sort_order" type="number" class="form-input" />
+                        </div>
+                        <div class="form-row">
+                            <label>Rasm (ixtiyoriy)</label>
+                            <input type="file" accept="image/*" @change="promoImageFile = $event.target.files[0]" class="form-input" />
+                            <img v-if="promoEditId && promoForm.current_image" :src="resolvePromoImage(promoForm.current_image)" class="promo-preview-img" />
+                        </div>
+                        <div class="form-row">
+                            <label class="checkbox-label">
+                                <input type="checkbox" v-model="promoForm.is_active" />
+                                Faol
+                            </label>
+                        </div>
+                        <div v-if="promoSaveError" class="notice-error">{{ promoSaveError }}</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn-cancel" @click="promoFormOpen = false">Bekor</button>
+                        <button class="btn-save" :disabled="promoSaving" @click="savePromoSlide">
+                            <i v-if="promoSaving" class="fas fa-spinner fa-spin"></i>
+                            {{ promoSaving ? 'Saqlanmoqda...' : 'Saqlash' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Google Import Card -->
             <div class="import-card">
                 <div class="import-header">
@@ -288,16 +381,16 @@
                     </div>
                 </div>
                 <div class="status-filters">
-                    <button class="status-chip" :class="{ active: statusFilter === 'all' }" @click="statusFilter = 'all'">
+                    <button class="status-chip" :class="{ active: statusFilter === 'all' }" @click="statusFilter = 'all'; resetPage()">
                         Barchasi ({{ restaurants.length }})
                     </button>
-                    <button class="status-chip" :class="{ active: statusFilter === 'active' }" @click="statusFilter = 'active'">
+                    <button class="status-chip" :class="{ active: statusFilter === 'active' }" @click="statusFilter = 'active'; resetPage()">
                         Faol ({{ activeCount }})
                     </button>
-                    <button class="status-chip" :class="{ active: statusFilter === 'inactive' }" @click="statusFilter = 'inactive'">
+                    <button class="status-chip" :class="{ active: statusFilter === 'inactive' }" @click="statusFilter = 'inactive'; resetPage()">
                         Nofaol ({{ inactiveCount }})
                     </button>
-                    <button class="status-chip" :class="{ active: statusFilter === 'archived' }" @click="statusFilter = 'archived'">
+                    <button class="status-chip" :class="{ active: statusFilter === 'archived' }" @click="statusFilter = 'archived'; resetPage()">
                         Arxiv ({{ archivedCount }})
                     </button>
                 </div>
@@ -348,7 +441,7 @@
                                         @change="toggleSelection(r.id, $event.target.checked)"
                                     />
                                 </td>
-                                <td class="td-num">{{ i + 1 }}</td>
+                                <td class="td-num">{{ (serverPage - 1) * serverPerPage + i + 1 }}</td>
                                 <td>
                                     <div class="restaurant-cell">
                                         <div class="restaurant-thumb">
@@ -421,9 +514,29 @@
                     </table>
                 </div>
 
+                <!-- Server pagination -->
+                <div class="table-pagination" v-if="!loading && serverLastPage > 1">
+                    <button class="page-btn" :disabled="serverPage <= 1" @click="refreshRestaurants(serverPage - 1)">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <template v-for="p in serverPageNumbers" :key="p">
+                        <span v-if="p === '...'" class="page-ellipsis">…</span>
+                        <button
+                            v-else
+                            class="page-btn"
+                            :class="{ active: p === serverPage }"
+                            @click="refreshRestaurants(p)"
+                        >{{ p }}</button>
+                    </template>
+                    <button class="page-btn" :disabled="serverPage >= serverLastPage" @click="refreshRestaurants(serverPage + 1)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+
                 <!-- Footer -->
-                <div class="table-footer" v-if="!loading && filtered.length > 0">
-                    <p>{{ $t('admin.total') }} <strong>{{ filtered.length }}</strong> {{ $t('admin.allRestaurants').toLowerCase() }}</p>
+                <div class="table-footer" v-if="!loading && (serverTotal > 0 || filtered.length > 0)">
+                    <p>{{ $t('admin.total') }} <strong>{{ serverTotal || filtered.length }}</strong> {{ $t('admin.allRestaurants').toLowerCase() }}</p>
+                    <p v-if="serverLastPage > 1" class="page-info">{{ serverPage }} / {{ serverLastPage }} sahifa</p>
                 </div>
             </div>
         </div>
@@ -447,6 +560,11 @@ const selectedIds = ref([])
 const tableNotice = ref('')
 const tableNoticeType = ref('success')
 const statusFilter = ref('all')
+
+const serverPage = ref(1)
+const serverLastPage = ref(1)
+const serverTotal = ref(0)
+const serverPerPage = ref(50)
 
 // ─── Google Import ma'lumotlari ───────────────────────────────────────────────
 
@@ -708,6 +826,19 @@ const activeCount   = computed(() => restaurants.value.filter(r => r.is_active &
 const inactiveCount = computed(() => restaurants.value.filter(r => !r.is_active && !r.deleted_at).length)
 const archivedCount = computed(() => restaurants.value.filter(r => !!r.deleted_at).length)
 
+const resetPage = () => {}
+
+const serverPageNumbers = computed(() => {
+    const total = serverLastPage.value
+    const cur   = serverPage.value
+    const delta = 2
+    const range = []
+    for (let i = Math.max(1, cur - delta); i <= Math.min(total, cur + delta); i++) range.push(i)
+    if (range[0] > 1) { range.unshift('...'); range.unshift(1) }
+    if (range[range.length - 1] < total) { range.push('...'); range.push(total) }
+    return range
+})
+
 function setNotice(message, type = 'success') {
     tableNotice.value = message
     tableNoticeType.value = type
@@ -717,24 +848,130 @@ function setNotice(message, type = 'success') {
     }, 3500)
 }
 
-async function refreshRestaurants() {
+async function refreshRestaurants(page = serverPage.value) {
     try {
-        const res = await api.get('/admin/restaurants')
-        restaurants.value = res.data
+        const res = await api.get('/admin/restaurants', {
+            params: { page, per_page: serverPerPage.value }
+        })
+        const data = res.data
+        if (data && Array.isArray(data.data)) {
+            restaurants.value = data.data
+            serverPage.value = data.current_page ?? page
+            serverLastPage.value = data.last_page ?? 1
+            serverTotal.value = data.total ?? data.data.length
+        } else if (Array.isArray(data)) {
+            restaurants.value = data
+            serverPage.value = 1
+            serverLastPage.value = 1
+            serverTotal.value = data.length
+        } else {
+            restaurants.value = []
+        }
     } catch (error) {
         if (error?.response?.status === 401) {
             auth.logout()
             router.push('/login')
             return
         }
-        setNotice(error?.response?.data?.message || 'Admin ro‘yxatini yuklashda xatolik.', 'error')
+        setNotice(error?.response?.data?.message || "Admin ro'yxatini yuklashda xatolik.", 'error')
         restaurants.value = []
     }
 }
 
+// ─── Promo slides state ───────────────────────────────────────────────────────
+const promoSlides   = ref([])
+const promoLoading  = ref(false)
+const promoFormOpen = ref(false)
+const promoEditId   = ref(null)
+const promoSaving   = ref(false)
+const promoSaveError = ref('')
+const promoImageFile = ref(null)
+const promoForm = ref({
+    title: '', badge: '', subtitle: '', bg_color: '', sort_order: 0,
+    is_active: true, current_image: null
+})
+
+function resolvePromoImage(path) {
+    if (!path) return ''
+    if (path.startsWith('http')) return path
+    const base = import.meta.env.VITE_API_URL?.replace('/api', '') ||
+                 'http://localhost:8000'
+    return `${base}/storage/${path}`
+}
+
+async function loadPromoSlides() {
+    promoLoading.value = true
+    try {
+        const res = await api.get('/admin/promo-slides')
+        promoSlides.value = Array.isArray(res.data) ? res.data : []
+    } catch {
+        promoSlides.value = []
+    } finally {
+        promoLoading.value = false
+    }
+}
+
+function openPromoForm(slide) {
+    promoEditId.value   = slide?.id ?? null
+    promoImageFile.value = null
+    promoSaveError.value = ''
+    promoForm.value = {
+        title:         slide?.title      ?? '',
+        badge:         slide?.badge      ?? '',
+        subtitle:      slide?.subtitle   ?? '',
+        bg_color:      slide?.bg_color   ?? 'linear-gradient(120deg, #0f6e56 0%, #1d9e75 100%)',
+        sort_order:    slide?.sort_order ?? 0,
+        is_active:     slide?.is_active  ?? true,
+        current_image: slide?.image_path ?? null,
+    }
+    promoFormOpen.value = true
+}
+
+async function savePromoSlide() {
+    if (!promoForm.value.title.trim()) {
+        promoSaveError.value = 'Sarlavha kiritish shart'
+        return
+    }
+    promoSaving.value = true
+    promoSaveError.value = ''
+    try {
+        const fd = new FormData()
+        fd.append('title',      promoForm.value.title)
+        fd.append('badge',      promoForm.value.badge || '')
+        fd.append('subtitle',   promoForm.value.subtitle || '')
+        fd.append('bg_color',   promoForm.value.bg_color || '')
+        fd.append('sort_order', String(promoForm.value.sort_order ?? 0))
+        fd.append('is_active',  promoForm.value.is_active ? '1' : '0')
+        if (promoImageFile.value) fd.append('image', promoImageFile.value)
+
+        if (promoEditId.value) {
+            await api.post(`/admin/promo-slides/${promoEditId.value}`, fd)
+        } else {
+            await api.post('/admin/promo-slides', fd)
+        }
+        promoFormOpen.value = false
+        await loadPromoSlides()
+    } catch (e) {
+        promoSaveError.value = e?.response?.data?.message || 'Saqlashda xatolik'
+    } finally {
+        promoSaving.value = false
+    }
+}
+
+async function deletePromoSlide(id) {
+    if (!confirm('Slideni o\'chiramizmi?')) return
+    try {
+        await api.delete(`/admin/promo-slides/${id}`)
+        await loadPromoSlides()
+    } catch {
+        setNotice('Slideni o\'chirishda xatolik', 'error')
+    }
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 onMounted(async () => {
     try {
-        await refreshRestaurants()
+        await Promise.all([refreshRestaurants(), loadPromoSlides()])
     } finally {
         loading.value = false
     }
@@ -909,6 +1146,253 @@ const logout = async () => {
 .green-text { color: #1D9E75; }
 .red-text { color: #E24B4A; }
 .orange-text { color: #EF9F27; }
+
+/* PROMO SLIDER CARD */
+.promo-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+.promo-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 24px;
+    border-bottom: 1px solid #f0f0f0;
+}
+.promo-card-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+.promo-add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #1D9E75, #0F6E56);
+    color: white;
+    padding: 9px 13px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.promo-add-btn:hover { filter: brightness(1.03); }
+
+.promo-slides-list { padding: 16px 24px; }
+.promo-loading,
+.promo-empty {
+    padding: 10px 2px;
+    color: #7b7f86;
+    font-size: 14px;
+}
+.promo-items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.promo-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid #ebedf0;
+    border-radius: 12px;
+    padding: 10px;
+    background: #fff;
+}
+.promo-item-thumb {
+    width: 84px;
+    height: 56px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #f4f5f7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #d0d4da;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+.promo-item-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.promo-item-info {
+    min-width: 0;
+    flex: 1;
+}
+.promo-item-info strong {
+    display: block;
+    color: #15191f;
+    font-size: 15px;
+    line-height: 1.2;
+}
+.promo-item-info p {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #727780;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.promo-item-badge {
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 5px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: #eef8f4;
+    color: #0f6e56;
+    font-size: 11px;
+    font-weight: 700;
+}
+.promo-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+.btn-icon {
+    width: 33px;
+    height: 33px;
+    border: 1px solid #e3e6ea;
+    border-radius: 8px;
+    background: #fff;
+    color: #5c6370;
+    cursor: pointer;
+}
+.btn-icon:hover { border-color: #b9d4ca; color: #1D9E75; }
+.btn-icon.red:hover { border-color: #f1c8c8; color: #cc3737; }
+
+.text-green { color: #0F6E56; }
+.text-gray { color: #8c919a; }
+
+/* PROMO MODAL */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.42);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 300;
+}
+.modal-box {
+    width: min(560px, 100%);
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 18px 52px rgba(2, 8, 23, 0.28);
+    overflow: hidden;
+}
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px;
+    border-bottom: 1px solid #edf0f3;
+}
+.modal-header h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: #111827;
+}
+.modal-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: #f3f4f6;
+    color: #6b7280;
+    cursor: pointer;
+}
+.modal-body {
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.form-row label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #4b5563;
+}
+.form-input {
+    width: 100%;
+    border: 1px solid #dfe3e8;
+    border-radius: 10px;
+    background: #fff;
+    color: #111827;
+    padding: 10px 12px;
+    font-size: 14px;
+}
+.form-input:focus {
+    outline: none;
+    border-color: #7ac8b1;
+    box-shadow: 0 0 0 3px rgba(29, 158, 117, 0.12);
+}
+.checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #374151;
+}
+.promo-preview-img {
+    width: 100%;
+    max-height: 180px;
+    border-radius: 10px;
+    object-fit: cover;
+    border: 1px solid #e8ecef;
+}
+.notice-error {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #b42318;
+    background: #fef3f2;
+    border: 1px solid #fecdca;
+    border-radius: 8px;
+    padding: 8px 10px;
+}
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 14px 18px 16px;
+    border-top: 1px solid #edf0f3;
+}
+.btn-cancel,
+.btn-save {
+    border: none;
+    border-radius: 10px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.btn-cancel {
+    background: #f3f4f6;
+    color: #4b5563;
+}
+.btn-save {
+    background: linear-gradient(135deg, #1D9E75, #0F6E56);
+    color: #fff;
+}
+.btn-save:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
 
 /* TABLE CARD */
 .table-card {
@@ -1110,8 +1594,37 @@ const logout = async () => {
 .table-footer {
     padding: 14px 24px; border-top: 1px solid #f0f0f0;
     background: #f9f9f9; font-size: 13px; color: #888;
+    display: flex; justify-content: space-between; align-items: center;
 }
 .table-footer strong { color: #1a1a1a; }
+.page-info { font-size: 13px; color: #aaa; }
+
+/* PAGINATION */
+.table-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 14px 24px;
+    border-top: 1px solid #f0f0f0;
+    background: #fafafa;
+}
+.page-btn {
+    min-width: 36px; height: 36px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: white;
+    color: #333;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0 10px;
+    transition: all 0.15s;
+}
+.page-btn:hover:not(:disabled) { border-color: #1D9E75; color: #1D9E75; }
+.page-btn.active { background: #1D9E75; color: white; border-color: #1D9E75; }
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.page-ellipsis { color: #aaa; font-size: 14px; padding: 0 4px; }
 
 /* ─── IMPORT CARD ─────────────────────────────────────────────────────────── */
 .import-card {

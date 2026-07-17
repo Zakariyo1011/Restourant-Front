@@ -56,15 +56,15 @@
                 </div>
 
                 <div class="address-modal-toolbar">
-                    <button class="toolbar-btn" @click="$emit('useGps')" :disabled="locationLoading">
-                        <i :class="locationLoading ? 'fas fa-spinner fa-spin' : 'fas fa-crosshairs'"></i>
-                        <span>{{ $t('home.gpsBtn') }}</span>
-                    </button>
                     <span class="toolbar-note">{{ selectedMapHint }}</span>
                 </div>
 
                 <div class="address-map-shell">
                     <div id="home-address-map" class="address-map"></div>
+                    <button class="map-gps-btn" @click="$emit('useGps')" :disabled="locationLoading">
+                        <i :class="locationLoading ? 'fas fa-spinner fa-spin' : 'fas fa-crosshairs'"></i>
+                        <span>{{ $t('home.gpsBtn') }}</span>
+                    </button>
                 </div>
 
                 <div v-if="addressDraft" class="address-modal-footer">
@@ -210,33 +210,41 @@ defineEmits(['close', 'update:addressQuery', 'applyAddress', 'selectSuggestion',
 .address-suggestion:hover { border-color: #1D9E75; background: #eef8f4; }
 .address-suggestion span { color: #68867d; font-size: 12px; }
 
-.address-modal-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 14px;
-}
-.toolbar-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    border-radius: 999px;
-    border: 1px solid #cde5dd;
-    background: #f7fcfa;
-    color: #0f6e56;
-    cursor: pointer;
-}
-.toolbar-btn:disabled { opacity: 0.7; cursor: not-allowed; }
-.toolbar-note { color: #5c7a72; font-size: 13px; }
-
 .address-map-shell {
+    position: relative;
     overflow: hidden;
     border-radius: 22px;
     border: 1px solid #d7ebe4;
 }
 .address-map { width: 100%; height: 340px; background: #eef5f2; }
+.map-gps-btn {
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    z-index: 450;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid rgba(18, 94, 73, 0.2);
+    border-radius: 999px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #0f6e56;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(15, 110, 86, 0.18);
+}
+.map-gps-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+.address-modal-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 14px;
+}
+.toolbar-note { color: #5c7a72; font-size: 13px; }
 
 .address-modal-footer {
     margin-top: 16px;
@@ -270,7 +278,7 @@ defineEmits(['close', 'update:addressQuery', 'applyAddress', 'selectSuggestion',
     }
     .address-modal-search-row { grid-template-columns: 1fr; gap: 8px; }
     .address-confirm-btn { min-height: 50px; border-radius: 14px; font-size: 15px; }
-    .address-modal-toolbar { flex-direction: column; align-items: stretch; gap: 10px; }
+    .address-modal-toolbar { justify-content: flex-start; }
     .address-modal-footer { flex-direction: column; align-items: stretch; gap: 10px; }
     .address-apply-btn { min-height: 50px; width: 100%; }
     .address-map { height: 260px; }
@@ -281,5 +289,11 @@ defineEmits(['close', 'update:addressQuery', 'applyAddress', 'selectSuggestion',
     .address-modal-overlay { padding: 8px; align-items: flex-end; }
     .address-modal { border-radius: 22px 22px 0 0; width: 100%; max-height: 95vh; }
     .address-map { height: 220px; }
+    .map-gps-btn {
+        left: 10px;
+        top: 10px;
+        padding: 7px 10px;
+        font-size: 12px;
+    }
 }
 </style>

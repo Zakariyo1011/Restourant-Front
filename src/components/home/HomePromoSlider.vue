@@ -14,14 +14,15 @@
                     v-for="slide in promoSlides"
                     :key="slide.id"
                     class="promo-slide"
-                    :style="{ background: slide.bg }"
+                    :style="slide.image ? {} : { background: slide.bg }"
                 >
-                    <div class="promo-slide-content">
-                        <span class="promo-chip">{{ slide.badge }}</span>
+                    <img v-if="slide.image" :src="slide.image" class="promo-slide-bg-img" alt="" />
+                    <div class="promo-slide-content" :class="{ 'has-image': slide.image }">
+                        <span class="promo-chip" v-if="slide.badge">{{ slide.badge }}</span>
                         <h2>{{ slide.title }}</h2>
-                        <p>{{ slide.subtitle }}</p>
+                        <p v-if="slide.subtitle">{{ slide.subtitle }}</p>
                     </div>
-                    <div class="promo-slide-icon">
+                    <div v-if="!slide.image" class="promo-slide-icon">
                         <i :class="slide.icon"></i>
                     </div>
                 </article>
@@ -80,11 +81,28 @@ defineEmits(['prev', 'next', 'go'])
     justify-content: space-between;
     gap: 24px;
     color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.promo-slide-bg-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
 }
 
 .promo-slide-content {
     flex: 1;
     min-width: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.promo-slide-content.has-image {
+    text-shadow: 0 1px 6px rgba(0,0,0,0.55);
 }
 
 .promo-slide-icon {
@@ -98,6 +116,8 @@ defineEmits(['prev', 'next', 'go'])
     align-items: center;
     justify-content: center;
     font-size: 36px;
+    position: relative;
+    z-index: 1;
 }
 
 .promo-chip {
