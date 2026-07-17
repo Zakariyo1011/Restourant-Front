@@ -62,10 +62,10 @@
         </div>
 
         <div v-if="lightboxOpen" class="lightbox-overlay" @click.self="closeLightbox">
-            <button class="lightbox-close" @click.prevent="closeLightbox">
+            <button class="lightbox-close" @click.stop="closeLightbox">
                 <i class="fas fa-times"></i>
             </button>
-            <button v-if="galleryImages.length > 1" class="lightbox-nav prev" @click.prevent="prevImage">
+            <button v-if="galleryImages.length > 1" class="lightbox-nav prev" @click.stop="prevImage">
                 <i class="fas fa-chevron-left"></i>
             </button>
             <div class="lightbox-content">
@@ -78,14 +78,14 @@
                         :key="img.id || idx"
                         class="lightbox-thumb"
                         :class="{ active: selectedImageIndex === idx }"
-                        @click.prevent="selectedImageIndex = idx"
+                        @click.stop="selectedImageIndex = idx"
                     >
                         <img :src="resolveImageUrl(img.url || img)" :alt="restaurant.name" />
                     </div>
                 </div>
                 <p class="lightbox-caption">{{ selectedImageIndex + 1 }} / {{ galleryImages.length }}</p>
             </div>
-            <button v-if="galleryImages.length > 1" class="lightbox-nav next" @click.prevent="nextImage">
+            <button v-if="galleryImages.length > 1" class="lightbox-nav next" @click.stop="nextImage">
                 <i class="fas fa-chevron-right"></i>
             </button>
         </div>
@@ -355,7 +355,7 @@ onMounted(async () => {
 .home-link:hover { background: #E1F5EE; color: #1D9E75; }
 
 /* HERO */
-.hero { position: relative; height: 320px; overflow: hidden; width: 100%; max-width: 800px; margin: 0 auto; border-radius: 24px; }
+.hero { position: relative; height: 320px; overflow: hidden; width: 100%; max-width: 800px; margin: 16px auto 0; border-radius: 24px; }
 .hero-img { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
 .hero-placeholder {
     width: 100%; height: 100%;
@@ -464,12 +464,14 @@ onMounted(async () => {
     justify-content: center;
     cursor: pointer;
     transition: background 0.2s;
+    z-index: 501;
+    padding: 0;
 }
 .lightbox-close:hover,
 .lightbox-nav:hover { background: rgba(0,0,0,0.75); }
 .lightbox-close { top: 20px; right: 20px; }
-.lightbox-nav.prev { left: 20px; }
-.lightbox-nav.next { right: 20px; }
+.lightbox-nav.prev { left: 20px; top: 50%; transform: translateY(-50%); }
+.lightbox-nav.next { right: 20px; top: 50%; transform: translateY(-50%); }
 
 /* CONTENT */
 .content-wrap {

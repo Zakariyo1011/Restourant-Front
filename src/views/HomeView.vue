@@ -1180,17 +1180,22 @@ onMounted(async () => {
     setupLoadMoreObserver()
 })
 
-watch([loadMoreTrigger, hasMorePages, locationActive], async () => {
-    await nextTick()
+watch(hasMorePages, () => {
     setupLoadMoreObserver()
-})
+}, { flush: 'post' })
 
-watch([loading, paginationLoading, locationActive, () => filters.value.cuisine_type, hasMorePages], async () => {
+watch([loading, paginationLoading, locationActive, hasMorePages], async () => {
     if (!pendingCuisineHydration.value && !pendingFoodTypeHydration.value) {
         return
     }
 
-    if (locationActive.value || (!filters.value.cuisine_type && !selectedFoodTypeQuick.value)) {
+    if (locationActive.value) {
+        pendingCuisineHydration.value = false
+        pendingFoodTypeHydration.value = false
+        return
+    }
+
+    if (!filters.value.cuisine_type && !selectedFoodTypeQuick.value) {
         pendingCuisineHydration.value = false
         pendingFoodTypeHydration.value = false
         return
@@ -1202,7 +1207,8 @@ watch([loading, paginationLoading, locationActive, () => filters.value.cuisine_t
 
     pendingCuisineHydration.value = false
     pendingFoodTypeHydration.value = false
-    if (hasMorePages.value) {
+    
+    if (hasMorePages.value && !isHydratingAllPages.value) {
         await ensureAllRestaurantsLoaded()
     }
 })
