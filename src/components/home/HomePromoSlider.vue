@@ -55,8 +55,6 @@ defineEmits(['prev', 'next', 'go'])
 .promo-slider-wrap {
     position: relative;
     margin-bottom: 6px;
-    /* Horizontal padding makes room for the protruding arrows */
-    padding: 0 20px;
 }
 
 .promo-slider-window {
@@ -170,8 +168,8 @@ defineEmits(['prev', 'next', 'go'])
     background: #fff;
     transform: translateY(-60%) scale(1.08);
 }
-.slider-prev { left: 0; }
-.slider-next { right: 0; }
+.slider-prev { left: -18px; }
+.slider-next { right: -18px; }
 
 .promo-dots {
     display: flex;
@@ -201,8 +199,8 @@ defineEmits(['prev', 'next', 'go'])
     .promo-slide p    { font-size: 13px; }
     .promo-slide-icon { width: 68px; height: 68px; font-size: 26px; border-radius: 18px; }
     .slider-nav       { width: 32px; height: 32px; font-size: 11px; }
-    .slider-prev      { left: 8px; }
-    .slider-next      { right: 8px; }
+    .slider-prev      { left: 6px; }
+    .slider-next      { right: 6px; }
 }
 
 @media (max-width: 480px) {
