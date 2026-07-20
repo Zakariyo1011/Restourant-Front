@@ -23,19 +23,13 @@
     <HomeOrderToolbar
         :quick-categories="quickCategories"
         :food-types="localizedFoodTypes"
-        :sorting-options="sortingOptions"
         :selected-cuisine="selectedCuisineQuick"
         :selected-food-type="selectedFoodTypeQuick"
         :selected-food-type-label="selectedFoodTypeLabel"
-        :selected-sorting="selectedSortingQuick"
         :show-more-menu="showMoreMenu"
-        :show-sorting-menu="showSortingMenu"
         @selectCategory="(key, close) => selectQuickCategory(key, close)"
         @selectFoodType="(slug, close) => selectFoodType(slug, close)"
         @toggleMoreMenu="toggleMoreMenu"
-        @toggleSortingMenu="toggleSortingMenu"
-        @selectSorting="selectedSortingQuick = $event"
-        @applySorting="applySortingSelection"
     />
 
     <div class="section-header">
@@ -45,9 +39,6 @@
                 {{ locationActive ? $t('home.nearbyTitle') : $t('home.allTitle') }}
             </h2>
             <p class="section-sub">{{ $t('home.found', { count: displayCount }) }}</p>
-        </div>
-        <div class="section-sort-pill">
-            {{ activeSortingLabel }}
         </div>
     </div>
 
@@ -180,13 +171,10 @@ const suppressAddressQueryWatcher = ref(false)
 const promoInterval = ref(null)
 const currentPromoIndex = ref(0)
 const showMoreMenu = ref(false)
-const showSortingMenu = ref(false)
 const foodTypes = ref([])
 const selectedCuisineQuick = ref('')
 const selectedFoodTypeQuick = ref('')
-const selectedSortingQuick = ref('trust')
 const moreMenuRef = ref(null)
-const sortingMenuRef = ref(null)
 const loadMoreTrigger = ref(null)
 const loadMoreObserver = ref(null)
 const pendingCuisineHydration = ref(false)
@@ -416,23 +404,9 @@ const quickCategories = [
     { key: 'russian', label: 'Russian' },
 ]
 
-const sortingOptions = [
-    { key: 'trust', label: 'I trust you' },
-    { key: 'top_rating', label: 'Top rating' },
-    { key: 'fastest_delivery', label: 'Fastest Delivery' },
-]
-
-const sortingLabelsMap = {
-    trust: 'I trust you',
-    top_rating: 'Top rating',
-    fastest_delivery: 'Fastest Delivery',
-}
-
 const promoTrackStyle = computed(() => ({
     transform: `translateX(-${currentPromoIndex.value * 100}%)`,
 }))
-
-const activeSortingLabel = computed(() => sortingLabelsMap[selectedSortingQuick.value] || 'I trust you')
 
 const hasActiveClientFilters = computed(() => {
     return Boolean(
@@ -526,27 +500,6 @@ const selectFoodType = async (slug, closeMenu = false) => {
 
 const toggleMoreMenu = () => {
     showMoreMenu.value = !showMoreMenu.value
-    if (showMoreMenu.value) {
-        showSortingMenu.value = false
-    }
-}
-
-const toggleSortingMenu = () => {
-    showSortingMenu.value = !showSortingMenu.value
-    if (showSortingMenu.value) {
-        showMoreMenu.value = false
-    }
-}
-
-const applySortingSelection = () => {
-    if (selectedSortingQuick.value === 'fastest_delivery' && locationActive.value) {
-        sortBy.value = 'distance'
-    } else if (selectedSortingQuick.value === 'trust') {
-        sortBy.value = 'default'
-    } else {
-        sortBy.value = 'default'
-    }
-    showSortingMenu.value = false
 }
 
 const getRestaurantRating = (restaurant) => {
@@ -566,10 +519,6 @@ const handleClickOutsideMenus = (event) => {
 
     if (showMoreMenu.value && moreMenuRef.value && !moreMenuRef.value.contains(target)) {
         showMoreMenu.value = false
-    }
-
-    if (showSortingMenu.value && sortingMenuRef.value && !sortingMenuRef.value.contains(target)) {
-        showSortingMenu.value = false
     }
 }
 
@@ -677,15 +626,7 @@ const filtered = computed(() => {
         result = result.filter(r => r.price_range === filters.value.price_range)
     }
 
-    if (selectedSortingQuick.value === 'top_rating') {
-        result = [...result].sort((a, b) => getRestaurantRating(b) - getRestaurantRating(a))
-    } else if (selectedSortingQuick.value === 'fastest_delivery') {
-        if (locationActive.value) {
-            result = [...result].sort((a, b) => (a.distance || 0) - (b.distance || 0))
-        } else {
-            result = [...result].sort((a, b) => getRestaurantDeliveryTime(a) - getRestaurantDeliveryTime(b))
-        }
-    } else if (sortBy.value === 'distance' && locationActive.value) {
+    if (sortBy.value === 'distance' && locationActive.value) {
         result = [...result].sort((a, b) => (a.distance || 0) - (b.distance || 0))
     } else if (sortBy.value === 'name') {
         result = [...result].sort((a, b) => a.name.localeCompare(b.name))

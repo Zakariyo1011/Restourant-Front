@@ -11,9 +11,6 @@
             <div v-else class="card-no-img">
                 <i class="fas fa-utensils"></i>
             </div>
-            <div class="card-badge">
-                <i class="fas fa-circle"></i> {{ $t('home.open') }}
-            </div>
             <div class="distance-badge" v-if="restaurant.distance">
                 <i class="fas fa-route"></i>
                 {{ restaurant.distance }} km
@@ -98,14 +95,6 @@ const imageSrc = computed(() => props.resolveImageUrl(props.getRestaurantImageUr
     display: flex; align-items: center; justify-content: center;
     font-size: 40px; color: #ccc;
 }
-.card-badge {
-    position: absolute; top: 12px; left: 12px;
-    background: #1D9E75; color: white;
-    padding: 4px 10px; border-radius: 20px;
-    font-size: 11px; font-weight: 500;
-    display: flex; align-items: center; gap: 4px;
-}
-.card-badge .fa-circle { font-size: 6px; }
 
 .card-body { padding: 16px; }
 .card-title { font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px; }

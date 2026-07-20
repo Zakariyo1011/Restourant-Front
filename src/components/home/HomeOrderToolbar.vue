@@ -57,30 +57,6 @@
                 </div>
             </div>
 
-            <div class="dropdown-wrap" ref="sortingMenuRef">
-                <button class="sorting-chip" @click="$emit('toggleSortingMenu')">
-                    <i class="fas fa-sliders-h"></i>
-                    Sorting
-                </button>
-                <transition name="menu-fade">
-                    <div v-if="showSortingMenu" class="sorting-panel">
-                        <h3>What do you want to view first?</h3>
-                        <button
-                            v-for="option in sortingOptions"
-                            :key="option.key"
-                            class="sorting-option"
-                            @click="$emit('selectSorting', option.key)"
-                        >
-                            <span>{{ option.label }}</span>
-                            <i
-                                class="far"
-                                :class="selectedSorting === option.key ? 'fa-check-circle selected' : 'fa-circle'"
-                            ></i>
-                        </button>
-                        <button class="sorting-apply-btn" @click="$emit('applySorting')">Show</button>
-                    </div>
-                </transition>
-            </div>
         </div>
     </section>
 </template>
@@ -93,16 +69,13 @@ const foodTypeQuery = ref('')
 const props = defineProps({
     quickCategories: { type: Array, default: () => [] },
     foodTypes:       { type: Array, default: () => [] },
-    sortingOptions:  { type: Array, default: () => [] },
     selectedCuisine: { type: String, default: '' },
     selectedFoodType: { type: String, default: '' },
     selectedFoodTypeLabel: { type: String, default: '' },
-    selectedSorting: { type: String, default: 'trust' },
     showMoreMenu:    { type: Boolean, default: false },
-    showSortingMenu: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['selectCategory', 'selectFoodType', 'toggleMoreMenu', 'toggleSortingMenu', 'selectSorting', 'applySorting'])
+const emit = defineEmits(['selectCategory', 'selectFoodType', 'toggleMoreMenu'])
 
 const filteredFoodTypes = computed(() => {
     const query = foodTypeQuery.value.trim().toLowerCase()
@@ -241,66 +214,6 @@ const selectFoodTypeOption = (slug, closeMenu = false) => {
     padding: 4px 2px;
 }
 
-.sorting-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    border: 1px solid #dce8e3;
-    background: #f9fcfb;
-    color: #27473e;
-    border-radius: 12px;
-    padding: 10px 14px;
-    font-size: 15px;
-    cursor: pointer;
-}
-.sorting-chip:hover { border-color: #83cdb6; }
-
-.sorting-panel {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    width: 300px;
-    border-radius: 18px;
-    background: #fff;
-    box-shadow: 0 20px 45px rgba(11, 41, 34, 0.2);
-    border: 1px solid #e0ece7;
-    padding: 14px;
-    z-index: 22;
-}
-.sorting-panel h3 {
-    font-size: 29px;
-    line-height: 1.1;
-    margin-bottom: 12px;
-    color: #203c35;
-}
-.sorting-option {
-    width: 100%;
-    border: none;
-    background: transparent;
-    border-radius: 10px;
-    padding: 9px 6px;
-    color: #3a564f;
-    font-size: 16px;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.sorting-option:hover { background: #eef8f4; }
-.sorting-option .selected { color: #1D9E75; }
-.sorting-apply-btn {
-    width: 100%;
-    margin-top: 10px;
-    min-height: 46px;
-    border-radius: 12px;
-    border: none;
-    background: #1D9E75;
-    color: white;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
 .menu-fade-enter-active,
 .menu-fade-leave-active { transition: opacity 0.18s ease, transform 0.18s ease; }
 .menu-fade-enter-from,
@@ -311,10 +224,7 @@ const selectFoodTypeOption = (slug, closeMenu = false) => {
     .toolbar-title { font-size: 26px; margin-bottom: 12px; }
     .toolbar-actions { flex-direction: column; align-items: stretch; gap: 10px; }
     .toolbar-chips { flex-wrap: wrap; width: 100%; }
-    .toolbar-chips .dropdown-wrap { width: 100%; }
     .toolbar-chips .more-chip { width: 100%; }
-    .sorting-chip { width: 100%; justify-content: center; }
-    .sorting-panel { right: 0; left: 0; width: 100%; }
     .dropdown-panel {
         left: 0;
         right: 0;
