@@ -861,7 +861,7 @@ async function runImport() {
     }
 }
 
-// ─── Existing logic ───────────────────────────────────────────────────────────
+// ─── Existing logic ─────────────────────────────────────────────────────────
 
 const filtered = computed(() => {
     const byStatus = restaurants.value.filter(r => {
