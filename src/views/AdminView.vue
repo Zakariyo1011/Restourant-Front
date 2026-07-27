@@ -331,6 +331,22 @@
                         />
                     </div>
 
+                    <div class="import-row">
+                        <label class="import-label">
+                            <i class="fas fa-layer-group"></i> Bulk rejim
+                        </label>
+                        <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" v-model="importAllTargetCountries" />
+                            8 ta davlatni birdan import qilish
+                        </label>
+                    </div>
+
+                    <div v-if="importAllTargetCountries" class="import-row" style="padding-top:0;">
+                        <small style="color:#6b7280;line-height:1.4;">
+                            Tanlangan preset: Amerika, Saudi Arabia, UAE, Malaysia, Thailand, Vietnam, Turkey, Russia
+                        </small>
+                    </div>
+
                     <!-- Natija xabar -->
                     <div v-if="importResult" class="import-result" :class="importResult.type">
                         <i :class="importResult.type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'"></i>
@@ -343,7 +359,7 @@
                     <!-- Boshlash tugmasi -->
                     <button
                         class="import-run-btn"
-                        :disabled="importing || !importForm.country || !importForm.cities.length"
+                        :disabled="importing || (!importAllTargetCountries && (!importForm.country || !importForm.cities.length))"
                         @click="runImport"
                     >
                         <span v-if="importing">
@@ -578,6 +594,8 @@ const COUNTRIES = [
     { code: 'TR', name: 'Turkey',        flag: '🇹🇷', cities: ['Istanbul','Ankara','Izmir','Bursa','Antalya','Konya','Adana','Gaziantep','Mersin','Kayseri'] },
     { code: 'AE', name: 'UAE',           flag: '🇦🇪', cities: ['Dubai','Abu Dhabi','Sharjah','Ajman','Ras Al Khaimah','Fujairah','Al Ain','Umm Al Quwain'] },
     { code: 'US', name: 'USA',           flag: '🇺🇸', cities: ['New York','Los Angeles','Chicago','Houston','Phoenix','Philadelphia','San Antonio','San Diego','Dallas','San Jose'] },
+    { code: 'TH', name: 'Thailand',      flag: '🇹🇭', cities: ['Bangkok','Chiang Mai','Phuket','Pattaya','Hat Yai','Khon Kaen','Nakhon Ratchasima','Udon Thani'] },
+    { code: 'VN', name: 'Vietnam',       flag: '🇻🇳', cities: ['Ho Chi Minh City','Hanoi','Da Nang','Hai Phong','Can Tho','Nha Trang','Hue','Vung Tau'] },
     { code: 'DE', name: 'Germany',       flag: '🇩🇪', cities: ['Berlin','Hamburg','Munich','Cologne','Frankfurt','Stuttgart','Düsseldorf','Leipzig','Dortmund','Essen'] },
     { code: 'FR', name: 'France',        flag: '🇫🇷', cities: ['Paris','Marseille','Lyon','Toulouse','Nice','Nantes','Strasbourg','Montpellier','Bordeaux','Lille'] },
     { code: 'GB', name: 'United Kingdom',flag: '🇬🇧', cities: ['London','Birmingham','Manchester','Glasgow','Leeds','Liverpool','Edinburgh','Bristol','Cardiff','Sheffield'] },
@@ -607,11 +625,23 @@ const CUISINES = [
     'Georgian', 'Azerbaijani', 'Armenian', 'Japanese', 'Vietnamese', 'Turkish',
 ]
 
+const BULK_TARGET_COUNTRIES = [
+    'USA',
+    'Saudi Arabia',
+    'UAE',
+    'Malaysia',
+    'Thailand',
+    'Vietnam',
+    'Turkey',
+    'Russia',
+]
+
 // ─── Import state ─────────────────────────────────────────────────────────────
 
 const importOpen      = ref(false)
 const importing       = ref(false)
 const importResult    = ref(null)
+const importAllTargetCountries = ref(false)
 
 const importForm = ref({
     country: '',
@@ -761,6 +791,26 @@ const vClickOutside = {
 }
 
 async function runImport() {
+    if (importAllTargetCountries.value) {
+        importResult.value = null
+        importing.value = true
+        try {
+            const res = await api.post('/admin/import-google-places', {
+                countries: BULK_TARGET_COUNTRIES,
+                cuisine: importForm.value.cuisine || undefined,
+                max: importForm.value.max,
+                auto_cities: true,
+            })
+            importResult.value = { type: 'success', message: res.data.message, errors: res.data.errors }
+            await refreshRestaurants()
+        } catch (e) {
+            importResult.value = { type: 'error', message: e.response?.data?.message || 'Xatolik yuz berdi', errors: [] }
+        } finally {
+            importing.value = false
+        }
+        return
+    }
+
     if (!importForm.value.country && countrySearch.value.trim()) {
         applyTypedCountry()
     }
