@@ -353,6 +353,16 @@
                         </label>
                     </div>
 
+                    <div class="import-row">
+                        <label class="import-label">
+                            <i class="fas fa-plus-circle"></i> Qo'shish rejimi
+                        </label>
+                        <label class="checkbox-label" style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                            <input type="checkbox" v-model="importForm.skip_updates" />
+                            Faqat yangi restoranlarni qo'shish (mavjudini yangilamasin)
+                        </label>
+                    </div>
+
                     <div v-if="importAllTargetCountries" class="import-row" style="padding-top:0;">
                         <small style="color:#6b7280;line-height:1.4;">
                             Tanlangan preset: Amerika, Saudi Arabia, UAE, Malaysia, Thailand, Vietnam, Turkey, Russia
@@ -661,6 +671,8 @@ const importForm = ref({
     cuisine: '',
     max:     50,
     max_per_country: 30,
+    skip_updates: true,
+    search_multiplier: 4,
 })
 
 const countryDropOpen = ref(false)
@@ -813,6 +825,9 @@ async function runImport() {
                 cuisine: importForm.value.cuisine || undefined,
                 max: importForm.value.max * BULK_TARGET_COUNTRIES.length,
                 max_per_country: importForm.value.max_per_country || 30,
+                skip_updates: importForm.value.skip_updates !== false,
+                search_multiplier: importForm.value.search_multiplier || 4,
+                max_runtime_seconds: 120,
                 auto_cities: true,
             })
             importResult.value = { type: 'success', message: res.data.message, errors: res.data.errors }
@@ -851,6 +866,9 @@ async function runImport() {
             cuisine: importForm.value.cuisine || undefined,
             max:     importForm.value.max,
             max_per_country: importForm.value.max_per_country || 30,
+            skip_updates: importForm.value.skip_updates !== false,
+            search_multiplier: importForm.value.search_multiplier || 4,
+            max_runtime_seconds: 90,
         })
         importResult.value = { type: 'success', message: res.data.message, errors: res.data.errors }
         await refreshRestaurants()
