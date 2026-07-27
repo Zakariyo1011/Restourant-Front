@@ -327,7 +327,19 @@
                             v-model.number="importForm.max"
                             type="number" min="1" max="200"
                             class="import-number-input"
-                            placeholder="60"
+                            placeholder="50"
+                        />
+                    </div>
+
+                    <div class="import-row">
+                        <label class="import-label">
+                            <i class="fas fa-layer-group"></i> Har davlatga maksimal
+                        </label>
+                        <input
+                            v-model.number="importForm.max_per_country"
+                            type="number" min="5" max="100"
+                            class="import-number-input"
+                            placeholder="30"
                         />
                     </div>
 
@@ -647,7 +659,8 @@ const importForm = ref({
     country: '',
     cities:  [],
     cuisine: '',
-    max:     60,
+    max:     50,
+    max_per_country: 30,
 })
 
 const countryDropOpen = ref(false)
@@ -798,7 +811,8 @@ async function runImport() {
             const res = await api.post('/admin/import-google-places', {
                 countries: BULK_TARGET_COUNTRIES,
                 cuisine: importForm.value.cuisine || undefined,
-                max: importForm.value.max,
+                max: importForm.value.max * BULK_TARGET_COUNTRIES.length,
+                max_per_country: importForm.value.max_per_country || 30,
                 auto_cities: true,
             })
             importResult.value = { type: 'success', message: res.data.message, errors: res.data.errors }
@@ -836,6 +850,7 @@ async function runImport() {
             cities:  importForm.value.cities,
             cuisine: importForm.value.cuisine || undefined,
             max:     importForm.value.max,
+            max_per_country: importForm.value.max_per_country || 30,
         })
         importResult.value = { type: 'success', message: res.data.message, errors: res.data.errors }
         await refreshRestaurants()
