@@ -1,5 +1,5 @@
 <template>
-    <div class="card" @click="$emit('select', restaurant.id)">
+    <div class="card" :class="{ 'card-compact': variant === 'compact' }" @click="$emit('select', restaurant.id)">
         <div class="card-img-wrap">
             <img
                 v-if="imageSrc"
@@ -14,6 +14,10 @@
             <div class="distance-badge" v-if="restaurant.distance">
                 <i class="fas fa-route"></i>
                 {{ restaurant.distance }} km
+            </div>
+            <div class="rating-badge" v-if="restaurant.rating">
+                <i class="fas fa-star"></i>
+                {{ Number(restaurant.rating).toFixed(1) }}
             </div>
         </div>
         <div class="card-body">
@@ -55,6 +59,10 @@ const props = defineProps({
     restaurant: {
         type: Object,
         required: true,
+    },
+    variant: {
+        type: String,
+        default: 'default',
     },
     resolveImageUrl: {
         type: Function,
@@ -125,5 +133,31 @@ const imageSrc = computed(() => props.resolveImageUrl(props.getRestaurantImageUr
     padding: 4px 10px; border-radius: 20px;
     font-size: 11px; font-weight: 500;
     display: flex; align-items: center; gap: 4px;
+}
+.rating-badge {
+    position: absolute; top: 12px; left: 12px;
+    background: rgba(255,255,255,0.92); color: #1a1a1a;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; gap: 4px;
+}
+.rating-badge i { color: #f5a623; font-size: 10px; }
+
+/* COMPACT (gorizontal scroll qatorlari uchun) */
+.card-compact {
+    flex: none;
+    width: 220px;
+    scroll-snap-align: start;
+}
+.card-compact .card-img-wrap { height: 130px; }
+.card-compact .card-body { padding: 12px; }
+.card-compact .card-title { font-size: 14px; margin-bottom: 4px; }
+.card-compact .card-desc { display: none; }
+.card-compact .card-info { margin-bottom: 8px; gap: 4px; }
+.card-compact .card-cta { padding-top: 8px; font-size: 12px; }
+
+@media (max-width: 480px) {
+    .card-compact { width: 168px; }
+    .card-compact .card-img-wrap { height: 110px; }
 }
 </style>

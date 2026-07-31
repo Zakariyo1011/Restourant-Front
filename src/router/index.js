@@ -13,6 +13,11 @@ const routes = [
         component: () => import('../views/RestaurantView.vue'),
     },
     {
+        path: '/map',
+        name: 'map',
+        component: () => import('../views/MapView.vue'),
+    },
+    {
         path: '/login',
         name: 'login',
         component: () => import('../views/LoginView.vue'),

@@ -11,6 +11,18 @@
 
         <!-- Main content -->
 <div class="main">
+    <!-- Mobil (kichik ekran) uchun: xarita markazidagi yangi joylashuv -->
+    <template v-if="isMobile">
+        <HomeMapTeaser
+            :center-lat="mapCenter.lat"
+            :center-lng="mapCenter.lng"
+            :pins="mapTeaserPins"
+            :resolve-image-url="resolveImageUrl"
+            :get-restaurant-image-url="getRestaurantImageUrl"
+            @expand="openFullMap"
+        />
+    </template>
+
     <HomePromoSlider
         :promo-slides="promoSlides"
         :current-promo-index="currentPromoIndex"
@@ -20,7 +32,9 @@
         @go="goToPromoSlide"
     />
 
+    <!-- Kompyuter ekranida sayt avvalgidek qoladi -->
     <HomeOrderToolbar
+        v-if="!isMobile"
         :quick-categories="quickCategories"
         :food-types="localizedFoodTypes"
         :selected-cuisine="selectedCuisineQuick"
@@ -32,7 +46,55 @@
         @toggleMoreMenu="toggleMoreMenu"
     />
 
-    <div class="section-header">
+    <template v-if="isMobile">
+        <HomeQuickActions
+            :cuisine-options="cuisineChipOptions"
+            :selected-cuisine="selectedCuisineQuick"
+            :location-active="locationActive"
+            :location-loading="locationLoading"
+            :top-rated-active="topRatedActive"
+            @openFilters="showFiltersSheet = true"
+            @toggleNearby="getUserLocation"
+            @toggleTopRated="toggleTopRated"
+            @selectCuisine="selectQuickCategory($event)"
+        />
+
+        <HomeCuisineRow
+            v-if="locationActive && nearbyRestaurants.length"
+            :title="$t('home.nearbyRowTitle')"
+            :restaurants="nearbyRestaurants"
+            :resolve-image-url="resolveImageUrl"
+            :get-restaurant-image-url="getRestaurantImageUrl"
+            :get-cuisine-label="getCuisineLabel"
+            @seeAll="seeAllNearby"
+            @select="$router.push(`/restaurant/${$event}`)"
+        />
+
+        <HomeCuisineRow
+            v-if="showTopRatedRow"
+            :title="$t('home.topRatedTitle')"
+            :restaurants="topRatedRestaurants"
+            :resolve-image-url="resolveImageUrl"
+            :get-restaurant-image-url="getRestaurantImageUrl"
+            :get-cuisine-label="getCuisineLabel"
+            @seeAll="seeAllTopRated"
+            @select="$router.push(`/restaurant/${$event}`)"
+        />
+
+        <HomeCuisineRow
+            v-for="row in cuisineRows"
+            :key="row.key"
+            :title="$t('home.cuisineDishesTitle', { cuisine: $t(`cuisines.${row.key}`) })"
+            :restaurants="row.items"
+            :resolve-image-url="resolveImageUrl"
+            :get-restaurant-image-url="getRestaurantImageUrl"
+            :get-cuisine-label="getCuisineLabel"
+            @seeAll="seeAllCuisine(row.key)"
+            @select="$router.push(`/restaurant/${$event}`)"
+        />
+    </template>
+
+    <div class="section-header" ref="gridSectionRef">
         <div>
             <h2 class="section-title">
                 <i class="fas fa-fire section-icon"></i>
@@ -105,6 +167,21 @@
             @useGps="useCurrentLocationInModal"
         />
 
+        <FiltersSheet
+            :show="showFiltersSheet"
+            :cuisine-options="cuisineChipOptions"
+            :selected-cuisine="selectedCuisineQuick"
+            :food-types="localizedFoodTypes"
+            :selected-food-type="selectedFoodTypeQuick"
+            :price-ranges="priceRanges"
+            :selected-price-range="filters.price_range"
+            :result-count="displayCount"
+            @close="showFiltersSheet = false"
+            @selectCuisine="handleSheetCuisine"
+            @selectFoodType="handleSheetFoodType"
+            @selectPriceRange="handleSheetPrice"
+            @apply="applyFiltersSheet"
+        />
 
         <!-- Footer -->
         <footer class="footer">
@@ -123,14 +200,20 @@
 
 import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import api from '../axios'
 import { resolveImageUrl } from '../utils/imageUrl'
+import { getRestaurantImageUrl } from '../utils/restaurantImage'
 import HomeNavbar from '../components/home/HomeNavbar.vue'
+import HomeMapTeaser from '../components/home/HomeMapTeaser.vue'
 import HomePromoSlider from '../components/home/HomePromoSlider.vue'
 import HomeOrderToolbar from '../components/home/HomeOrderToolbar.vue'
+import HomeQuickActions from '../components/home/HomeQuickActions.vue'
+import HomeCuisineRow from '../components/home/HomeCuisineRow.vue'
 import HomeRestaurantCard from '../components/home/HomeRestaurantCard.vue'
 import HomeAddressModal from '../components/home/HomeAddressModal.vue'
+import FiltersSheet from '../components/home/FiltersSheet.vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
@@ -140,6 +223,7 @@ delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({ iconUrl: markerIcon, shadowUrl: markerShadow })
 
 const { t, locale } = useI18n()
+const router = useRouter()
 
 const auth = useAuthStore()
 const restaurants = ref([])
@@ -175,6 +259,14 @@ const foodTypes = ref([])
 const selectedCuisineQuick = ref('')
 const selectedFoodTypeQuick = ref('')
 const moreMenuRef = ref(null)
+const showFiltersSheet = ref(false)
+const priceRanges = ['$', '$$', '$$$']
+const gridSectionRef = ref(null)
+const isMobile = ref(false)
+let mobileMediaQuery = null
+const handleMobileMediaChange = (event) => {
+    isMobile.value = event.matches
+}
 const loadMoreTrigger = ref(null)
 const loadMoreObserver = ref(null)
 const pendingCuisineHydration = ref(false)
@@ -404,6 +496,59 @@ const quickCategories = [
     { key: 'russian', label: 'Russian' },
 ]
 
+const availableCuisineKeys = computed(() => {
+    return cuisineKeys.filter(key => restaurants.value.some(r =>
+        normalizeCuisineValue(r.cuisine_type) === key || matchesCuisineByText(r, key)
+    ))
+})
+
+const cuisineChipOptions = computed(() => availableCuisineKeys.value.map(key => ({
+    key,
+    label: t(`cuisines.${key}`),
+})))
+
+const restaurantsForCuisine = (key) => {
+    const strict = restaurants.value.filter(r => normalizeCuisineValue(r.cuisine_type) === key)
+    return strict.length ? strict : restaurants.value.filter(r => matchesCuisineByText(r, key))
+}
+
+const cuisineRows = computed(() => availableCuisineKeys.value.map(key => ({
+    key,
+    items: restaurantsForCuisine(key),
+})))
+
+const topRatedRestaurants = computed(() => {
+    return [...restaurants.value]
+        .filter(r => r.rating != null && Number(r.rating) > 0)
+        .sort((a, b) => Number(b.rating) - Number(a.rating))
+        .slice(0, 10)
+})
+
+const showTopRatedRow = computed(() => topRatedRestaurants.value.length >= 4)
+const topRatedActive = computed(() => sortBy.value === 'rating')
+
+const mapCenter = computed(() => {
+    if (userLocation.value) return userLocation.value
+
+    const withLocation = restaurants.value.find(r => r.location?.latitude && r.location?.longitude)
+    if (withLocation) {
+        return {
+            lat: Number(withLocation.location.latitude),
+            lng: Number(withLocation.location.longitude),
+        }
+    }
+
+    return { lat: 41.3111, lng: 69.2797 }
+})
+
+const mapTeaserPins = computed(() => {
+    const source = locationActive.value
+        ? nearbyRestaurants.value
+        : restaurants.value.filter(r => r.location?.latitude && r.location?.longitude)
+
+    return source.slice(0, 8)
+})
+
 const promoTrackStyle = computed(() => ({
     transform: `translateX(-${currentPromoIndex.value * 100}%)`,
 }))
@@ -500,6 +645,51 @@ const selectFoodType = async (slug, closeMenu = false) => {
 
 const toggleMoreMenu = () => {
     showMoreMenu.value = !showMoreMenu.value
+}
+
+const toggleTopRated = async () => {
+    if (sortBy.value === 'rating') {
+        sortBy.value = 'default'
+        return
+    }
+
+    sortBy.value = 'rating'
+
+    if (!locationActive.value && !loading.value && hasMorePages.value) {
+        await ensureAllRestaurantsLoaded()
+    }
+}
+
+const openFullMap = () => {
+    router.push({ name: 'map', query: { lat: mapCenter.value.lat, lng: mapCenter.value.lng } })
+}
+
+const scrollToGrid = async () => {
+    await nextTick()
+    gridSectionRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+const seeAllCuisine = async (key) => {
+    await selectQuickCategory(key)
+    await scrollToGrid()
+}
+
+const seeAllTopRated = async () => {
+    await toggleTopRated()
+    await scrollToGrid()
+}
+
+const seeAllNearby = async () => {
+    await scrollToGrid()
+}
+
+const handleSheetCuisine = (key) => selectQuickCategory(key)
+const handleSheetFoodType = (slug) => selectFoodType(slug)
+const handleSheetPrice = (value) => {
+    filters.value.price_range = value
+}
+const applyFiltersSheet = () => {
+    showFiltersSheet.value = false
 }
 
 const getRestaurantRating = (restaurant) => {
@@ -630,6 +820,8 @@ const filtered = computed(() => {
         result = [...result].sort((a, b) => (a.distance || 0) - (b.distance || 0))
     } else if (sortBy.value === 'name') {
         result = [...result].sort((a, b) => a.name.localeCompare(b.name))
+    } else if (sortBy.value === 'rating') {
+        result = [...result].sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0))
     }
 
     return result
@@ -1102,15 +1294,12 @@ const applySelectedAddress = async () => {
     }
 }
 
-const getRestaurantImageUrl = (restaurant) => {
-    if (restaurant?.images?.length > 0) {
-        return restaurant.images[0].url
-    }
-    return restaurant.image_path || null
-}
-
 onMounted(async () => {
     document.addEventListener('click', handleClickOutsideMenus)
+
+    mobileMediaQuery = window.matchMedia('(max-width: 768px)')
+    isMobile.value = mobileMediaQuery.matches
+    mobileMediaQuery.addEventListener('change', handleMobileMediaChange)
 
     promoInterval.value = setInterval(() => {
         nextPromoSlide()
@@ -1119,6 +1308,9 @@ onMounted(async () => {
     await Promise.all([fetchRestaurants(1), fetchFoodTypes(), fetchPromoSlides()])
     await nextTick()
     setupLoadMoreObserver()
+
+    // Oshxona qatorlari va "Top baholangan" bo'limi uchun fonda qolgan sahifalarni ham yuklaymiz
+    ensureAllRestaurantsLoaded()
 })
 
 watch(hasMorePages, () => {
@@ -1183,6 +1375,7 @@ onBeforeUnmount(() => {
     document.body.style.overflow = ''
     clearTimeout(addressSearchDebounce.value)
     document.removeEventListener('click', handleClickOutsideMenus)
+    mobileMediaQuery?.removeEventListener('change', handleMobileMediaChange)
     clearInterval(promoInterval.value)
     disconnectLoadMoreObserver()
     if (modalMap.value) {

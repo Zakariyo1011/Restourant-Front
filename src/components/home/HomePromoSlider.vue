@@ -152,9 +152,9 @@ defineEmits(['prev', 'next', 'go'])
     height: 38px;
     border-radius: 50%;
     border: none;
-    background: rgba(240, 248, 245, 0.9);
+    background: rgba(20, 32, 27, 0.32);
     backdrop-filter: blur(6px);
-    color: #555;
+    color: #fff;
     font-size: 13px;
     cursor: pointer;
     z-index: 3;
@@ -165,7 +165,7 @@ defineEmits(['prev', 'next', 'go'])
     transition: background 0.2s, transform 0.2s;
 }
 .slider-nav:hover {
-    background: #fff;
+    background: rgba(20, 32, 27, 0.55);
     transform: translateY(-60%) scale(1.08);
 }
 .slider-prev { left: -18px; }
@@ -194,18 +194,18 @@ defineEmits(['prev', 'next', 'go'])
 }
 
 @media (max-width: 768px) {
-    .promo-slide      { min-height: 160px; padding: 20px 22px; }
+    .promo-slide      { min-height: 160px; padding: 20px 46px; }
     .promo-slide h2   { font-size: 22px; }
     .promo-slide p    { font-size: 13px; }
     .promo-slide-icon { width: 68px; height: 68px; font-size: 26px; border-radius: 18px; }
-    .slider-nav       { width: 32px; height: 32px; font-size: 11px; }
+    .slider-nav       { width: 30px; height: 30px; font-size: 11px; }
     .slider-prev      { left: 6px; }
     .slider-next      { right: 6px; }
 }
 
 @media (max-width: 480px) {
     .promo-slider-window { border-radius: 16px; }
-    .promo-slide         { min-height: 130px; padding: 16px 18px; }
+    .promo-slide         { min-height: 130px; padding: 16px 40px; }
     .promo-slide-icon    { display: none; }
     .promo-slide h2      { font-size: 19px; }
     .promo-chip          { font-size: 11px; padding: 4px 10px; margin-bottom: 8px; }
