@@ -51,7 +51,7 @@ export default {
         showResults: 'Көрсөтүү ({count})',
     },
     cuisines: {
-        uzbek: 'Өзбек', tajik: 'Тажик', kazakh: 'Казак', kyrgyz: 'Кыргыз',
+        uzbek: 'Өзбек', tajik: 'Тажик', kazakh: 'Казак', kyrgyz: 'Кыргыз', turkmen: 'Түркмөн',
         turkish: 'Түрк', arabic: 'Араб', persian: 'Парс', afghan: 'Афган',
         georgian: 'Грузин', russian: 'Орус', european: 'Европалык', asian: 'Азиялык', mixed: 'Аралаш',
     },

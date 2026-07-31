@@ -169,7 +169,7 @@
 
         <FiltersSheet
             :show="showFiltersSheet"
-            :cuisine-options="cuisineChipOptions"
+            :cuisine-options="allCuisineOptions"
             :selected-cuisine="selectedCuisineQuick"
             :food-types="localizedFoodTypes"
             :selected-food-type="selectedFoodTypeQuick"
@@ -280,7 +280,7 @@ const filters = ref({
     price_range: '',
 })
 
-const cuisineKeys = ['uzbek', 'tajik', 'kazakh', 'kyrgyz', 'turkish', 'arabic', 'persian', 'afghan', 'georgian', 'russian', 'european', 'asian', 'mixed']
+const cuisineKeys = ['uzbek', 'tajik', 'kazakh', 'kyrgyz', 'turkmen', 'turkish', 'arabic', 'persian', 'afghan', 'georgian', 'russian', 'european', 'asian', 'mixed']
 const cuisineAliases = {
     ozbek: 'uzbek',
     ozbekcha: 'uzbek',
@@ -299,6 +299,10 @@ const cuisineAliases = {
     qirgizcha: 'kyrgyz',
     qirgiz: 'kyrgyz',
     qyrgyz: 'kyrgyz',
+    turkman: 'turkmen',
+    turkmanistan: 'turkmen',
+    turkmenistan: 'turkmen',
+    turkmancha: 'turkmen',
 }
 
 const normalizeCuisineValue = (value) => {
@@ -350,6 +354,7 @@ const cuisineKeywordMap = {
     tajik: ['tajik', 'tojik'],
     kazakh: ['kazakh', 'qazaq', 'qozoq'],
     kyrgyz: ['kyrgyz', 'qirgiz', 'kirgiz'],
+    turkmen: ['turkmen', 'turkman', 'turkmaniston', 'turkmenistan'],
     turkish: ['turkish', 'turk', 'turkiye'],
     arabic: ['arabic', 'arab'],
     persian: ['persian', 'fors', 'iranian'],
@@ -507,9 +512,16 @@ const cuisineChipOptions = computed(() => availableCuisineKeys.value.map(key => 
     label: t(`cuisines.${key}`),
 })))
 
+// Filtr paneli doim barcha oshxona turlarini ko'rsatadi (hozircha restoran bo'lmasa ham)
+const allCuisineOptions = computed(() => cuisineKeys.map(key => ({
+    key,
+    label: t(`cuisines.${key}`),
+})))
+
 const restaurantsForCuisine = (key) => {
-    const strict = restaurants.value.filter(r => normalizeCuisineValue(r.cuisine_type) === key)
-    return strict.length ? strict : restaurants.value.filter(r => matchesCuisineByText(r, key))
+    return restaurants.value.filter(r =>
+        normalizeCuisineValue(r.cuisine_type) === key || matchesCuisineByText(r, key)
+    )
 }
 
 const cuisineRows = computed(() => availableCuisineKeys.value.map(key => ({
@@ -796,10 +808,9 @@ const filtered = computed(() => {
 
     const selectedCuisine = normalizeCuisineValue(filters.value.cuisine_type)
     if (selectedCuisine) {
-        const strictMatched = result.filter(r => normalizeCuisineValue(r.cuisine_type) === selectedCuisine)
-        result = strictMatched.length
-            ? strictMatched
-            : result.filter(r => matchesCuisineByText(r, selectedCuisine))
+        result = result.filter(r =>
+            normalizeCuisineValue(r.cuisine_type) === selectedCuisine || matchesCuisineByText(r, selectedCuisine)
+        )
     }
 
     if (selectedFoodTypeQuick.value) {

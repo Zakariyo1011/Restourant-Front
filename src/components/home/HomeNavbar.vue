@@ -13,6 +13,11 @@
                     :value="searchQuery"
                     :placeholder="$t('home.searchPlaceholder')"
                     class="search-input"
+                    type="text"
+                    autocomplete="off"
+                    autocorrect="off"
+                    spellcheck="false"
+                    name="restaurant-search"
                     @input="$emit('update:searchQuery', $event.target.value)"
                 />
             </div>
@@ -184,11 +189,31 @@ defineEmits(['update:searchQuery', 'openAddressModal'])
         flex-direction: column;
         gap: 8px;
     }
-    .nav-search-box,
-    .nav-address-trigger {
-        width: 100%;
+    .nav-discovery { align-items: center; }
+    .nav-search-box {
+        box-sizing: border-box;
+        flex: none;
+        width: calc(100% - 24px);
         max-width: none;
+        margin: 0 auto;
+        min-height: 48px;
+        padding: 0 18px;
+        border-radius: 24px;
+        background: #f1f3f4;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     }
+    .nav-search-box .search-icon { font-size: 16px; color: #1a1a1a; }
+    .nav-search-box .search-input {
+        text-align: center;
+        font-size: 15px;
+        font-weight: 600;
+        padding: 11px 0;
+        color: #1a1a1a;
+    }
+    .nav-search-box .search-input::placeholder { color: #1a1a1a; font-weight: 600; }
+
+    /* Yandex uslubidagi qidiruv: manzil tugmasi mobil kirish qismida ko'rinmaydi */
+    .nav-address-trigger { display: none; }
 }
 
 @media (max-width: 480px) {

@@ -62,6 +62,7 @@ export default {
         tajik: 'Tojik',
         kazakh: 'Qozoq',
         kyrgyz: "Qirg'iz",
+        turkmen: 'Turkman',
         turkish: 'Turk',
         arabic: 'Arab',
         persian: 'Fors',

@@ -51,7 +51,7 @@ export default {
         showResults: 'Нишон додан ({count})',
     },
     cuisines: {
-        uzbek: 'Ӯзбек', tajik: 'Тоҷик', kazakh: 'Қазоқ', kyrgyz: 'Қирғиз',
+        uzbek: 'Ӯзбек', tajik: 'Тоҷик', kazakh: 'Қазоқ', kyrgyz: 'Қирғиз', turkmen: 'Туркман',
         turkish: 'Турк', arabic: 'Араб', persian: 'Форс', afghan: 'Афгон',
         georgian: 'Гурҷ', russian: 'Рус', european: 'Аврупоӣ', asian: 'Осиёӣ', mixed: 'Омехта',
     },

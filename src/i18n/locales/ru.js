@@ -62,6 +62,7 @@ export default {
         tajik: 'Таджикская',
         kazakh: 'Казахская',
         kyrgyz: 'Кыргызская',
+        turkmen: 'Туркменская',
         turkish: 'Турецкая',
         arabic: 'Арабская',
         persian: 'Персидская',

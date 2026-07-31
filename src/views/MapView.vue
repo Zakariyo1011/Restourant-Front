@@ -118,7 +118,7 @@ const selectedCuisine = ref('')
 const selectedPriceRange = ref('')
 
 const priceRanges = ['$', '$$', '$$$']
-const cuisineKeys = ['uzbek', 'tajik', 'kazakh', 'kyrgyz', 'turkish', 'arabic', 'persian', 'afghan', 'georgian', 'russian', 'european', 'asian', 'mixed']
+const cuisineKeys = ['uzbek', 'tajik', 'kazakh', 'kyrgyz', 'turkmen', 'turkish', 'arabic', 'persian', 'afghan', 'georgian', 'russian', 'european', 'asian', 'mixed']
 const cuisineOptions = cuisineKeys.map(key => ({ key, label: t(`cuisines.${key}`) }))
 
 const getCuisineLabel = (value) => {
