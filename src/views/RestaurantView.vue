@@ -300,7 +300,7 @@ onMounted(async () => {
         await nextTick()
         const lat = parseFloat(restaurant.value.location.latitude)
         const lng = parseFloat(restaurant.value.location.longitude)
-        const map = L.map('map').setView([lat, lng], 15)
+        const map = L.map('map', { attributionControl: false }).setView([lat, lng], 15)
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap'
         }).addTo(map)

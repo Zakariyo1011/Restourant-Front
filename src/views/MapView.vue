@@ -192,7 +192,7 @@ onMounted(() => {
         ? { lat: queryLat, lng: queryLng }
         : DEFAULT_CENTER
 
-    map = L.map(mapId, { zoomControl: false }).setView([center.lat, center.lng], 14)
+    map = L.map(mapId, { zoomControl: false, attributionControl: false }).setView([center.lat, center.lng], 14)
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap',

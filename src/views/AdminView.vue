@@ -586,7 +586,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import api from '../axios'
-import { resolveImageUrl } from '../utils/imageUrl'
+import { resolveImageUrl, IMAGE_PLACEHOLDER } from '../utils/imageUrl'
 import LanguageSwitcher from '../components/LanguageSwitcher.vue'
 
 const auth = useAuthStore()
@@ -975,6 +975,7 @@ const promoForm = ref({
 })
 
 function resolvePromoImage(path) {
+    if (path) return IMAGE_PLACEHOLDER // VAQTINCHALIK: API rasmlari hozircha ishlamayapti
     if (!path) return ''
     if (path.startsWith('http')) return path
     const base = import.meta.env.VITE_API_URL?.replace('/api', '') ||

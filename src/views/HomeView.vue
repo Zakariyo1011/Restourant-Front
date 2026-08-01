@@ -1215,7 +1215,7 @@ const initAddressMap = () => {
             ? [userLocation.value.lat, userLocation.value.lng]
             : [41.3111, 69.2797]
 
-        modalMap.value = L.map('home-address-map', { zoomControl: false }).setView(initialCenter, userLocation.value ? 14 : 11)
+        modalMap.value = L.map('home-address-map', { zoomControl: false, attributionControl: false }).setView(initialCenter, userLocation.value ? 14 : 11)
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap'

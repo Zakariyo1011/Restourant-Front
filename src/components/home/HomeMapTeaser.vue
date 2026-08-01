@@ -58,6 +58,7 @@ onMounted(() => {
         boxZoom: false,
         keyboard: false,
         tap: false,
+        attributionControl: false,
     }).setView([props.centerLat, props.centerLng], 13)
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
