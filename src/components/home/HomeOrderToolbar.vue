@@ -95,17 +95,17 @@ const selectFoodTypeOption = (slug, closeMenu = false) => {
 
 <style scoped>
 .order-toolbar {
-    background: #ffffff;
+    background: var(--color-surface);
     border-radius: 18px;
     padding: 16px;
     margin-bottom: 18px;
-    box-shadow: 0 3px 12px rgba(12, 38, 32, 0.08);
+    box-shadow: var(--shadow-sm);
 }
 .toolbar-title {
     font-size: 34px;
     line-height: 1.05;
     margin-bottom: 14px;
-    color: #172b26;
+    color: var(--color-text);
     font-weight: 800;
 }
 .toolbar-actions {
@@ -121,9 +121,9 @@ const selectFoodTypeOption = (slug, closeMenu = false) => {
     gap: 8px;
 }
 .toolbar-chip {
-    border: 1px solid #dce8e3;
-    background: #f9fcfb;
-    color: #35544c;
+    border: 1px solid var(--color-primary-tint);
+    background: var(--color-primary-tint);
+    color: var(--color-text-muted);
     border-radius: 999px;
     padding: 9px 14px;
     font-size: 14px;
@@ -132,9 +132,9 @@ const selectFoodTypeOption = (slug, closeMenu = false) => {
 }
 .toolbar-chip.active,
 .toolbar-chip:hover {
-    background: #e8f6f1;
-    border-color: #83cdb6;
-    color: #0f6e56;
+    background: var(--color-primary-tint);
+    border-color: var(--color-primary-tint-strong);
+    color: var(--color-primary-dark);
 }
 .more-chip i { font-size: 11px; margin-left: 6px; }
 .more-chip {
@@ -153,9 +153,9 @@ const selectFoodTypeOption = (slug, closeMenu = false) => {
     overflow: auto;
     padding: 8px;
     border-radius: 16px;
-    background: #fff;
-    box-shadow: 0 20px 45px rgba(11, 41, 34, 0.18);
-    border: 1px solid #e0ece7;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--color-primary-tint);
     z-index: 20;
 }
 .food-search-block {
@@ -168,13 +168,13 @@ const selectFoodTypeOption = (slug, closeMenu = false) => {
     display: flex;
     align-items: center;
     gap: 8px;
-    border: 1px solid #dce8e3;
+    border: 1px solid var(--color-primary-tint);
     border-radius: 12px;
-    background: #f9fcfb;
+    background: var(--color-primary-tint);
     padding: 0 12px;
 }
 .food-search-input-wrap i {
-    color: #7a928b;
+    color: var(--color-text-muted);
     font-size: 13px;
 }
 .food-search-input {
@@ -182,7 +182,7 @@ const selectFoodTypeOption = (slug, closeMenu = false) => {
     border: none;
     outline: none;
     background: transparent;
-    color: #27473e;
+    color: var(--color-text);
     min-height: 40px;
     font-size: 14px;
 }
@@ -192,9 +192,9 @@ const selectFoodTypeOption = (slug, closeMenu = false) => {
     gap: 8px;
 }
 .food-type-option {
-    border: 1px solid #dce8e3;
-    background: #f9fcfb;
-    color: #35544c;
+    border: 1px solid var(--color-primary-tint);
+    background: var(--color-primary-tint);
+    color: var(--color-text-muted);
     border-radius: 999px;
     padding: 8px 12px;
     font-size: 13px;
@@ -203,13 +203,13 @@ const selectFoodTypeOption = (slug, closeMenu = false) => {
 }
 .food-type-option.active,
 .food-type-option:hover {
-    background: #e8f6f1;
-    border-color: #83cdb6;
-    color: #0f6e56;
+    background: var(--color-primary-tint);
+    border-color: var(--color-primary-tint-strong);
+    color: var(--color-primary-dark);
 }
 .food-type-empty {
     width: 100%;
-    color: #6f847d;
+    color: var(--color-text-muted);
     font-size: 13px;
     padding: 4px 2px;
 }

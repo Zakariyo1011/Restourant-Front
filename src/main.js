@@ -5,6 +5,11 @@ import router from './router'
 import i18n, { setLocale } from './i18n'
 import VueGoogleMaps from '@fawmi/vue-google-maps'
 import { IMAGE_PLACEHOLDER } from './utils/imageUrl'
+import { applyTheme, getStoredMode } from './utils/theme'
+import './styles/tokens.css'
+import './styles/reset.css'
+
+applyTheme(getStoredMode())
 
 const app = createApp(App)
 

@@ -1,25 +1,40 @@
 <template>
-  <router-view />
+  <OnboardingGate v-if="showOnboarding" @done="showOnboarding = false" />
+  <template v-else>
+    <component :is="layoutComponent" v-if="layoutComponent"><router-view /></component>
+    <router-view v-else />
+  </template>
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import { useAuthStore } from './stores/auth'
+import { useThemeStore } from './stores/theme'
+import { hasSeenOnboarding } from './utils/onboarding'
+import OnboardingGate from './components/onboarding/OnboardingGate.vue'
+import PublicShell from './layouts/PublicShell.vue'
+import AdminShell from './layouts/AdminShell.vue'
 
 const auth = useAuthStore()
+const theme = useThemeStore()
+const route = useRoute()
+const showOnboarding = ref(!hasSeenOnboarding())
+
+const layouts = {
+  public: PublicShell,
+  admin: AdminShell,
+}
+
+const layoutComponent = computed(() => layouts[route.meta.layout] ?? null)
 
 onMounted(() => {
   auth.fetchUser()
+  theme.watchSystem()
 })
 </script>
 
 <style>
-body {
-  box-sizing: border-box !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
 /* Restoran xarita pinlari (Leaflet divIcon orqali, scoped style ta'sir qilmaydi) */
 .restaurant-map-pin-wrap { background: transparent !important; border: none !important; }
 .map-pin { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
@@ -49,5 +64,5 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.map-pin--active .map-pin-photo { border-color: #1D9E75; box-shadow: 0 8px 20px rgba(15,110,86,0.4); }
+.map-pin--active .map-pin-photo { border-color: var(--color-primary); box-shadow: 0 8px 20px rgba(108,92,231,0.4); }
 </style>

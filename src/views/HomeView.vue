@@ -175,11 +175,16 @@
             :selected-food-type="selectedFoodTypeQuick"
             :price-ranges="priceRanges"
             :selected-price-range="filters.price_range"
+            :selected-rating="filters.min_rating"
+            :sort-options="sortOptions"
+            :selected-sort="sortBy"
             :result-count="displayCount"
             @close="showFiltersSheet = false"
             @selectCuisine="handleSheetCuisine"
             @selectFoodType="handleSheetFoodType"
             @selectPriceRange="handleSheetPrice"
+            @selectRating="handleSheetRating"
+            @selectSort="handleSheetSort"
             @apply="applyFiltersSheet"
         />
 
@@ -205,6 +210,7 @@ import { useAuthStore } from '../stores/auth'
 import api from '../axios'
 import { resolveImageUrl } from '../utils/imageUrl'
 import { getRestaurantImageUrl } from '../utils/restaurantImage'
+import { resolveCurrentPosition, getLocationErrorMessage } from '../composables/useGeolocation'
 import HomeNavbar from '../components/home/HomeNavbar.vue'
 import HomeMapTeaser from '../components/home/HomeMapTeaser.vue'
 import HomePromoSlider from '../components/home/HomePromoSlider.vue'
@@ -261,6 +267,12 @@ const selectedFoodTypeQuick = ref('')
 const moreMenuRef = ref(null)
 const showFiltersSheet = ref(false)
 const priceRanges = ['$', '$$', '$$$']
+const sortOptions = computed(() => ([
+    { value: 'default', label: t('home.sortDefault') },
+    { value: 'distance', label: t('home.sortDistance') },
+    { value: 'rating', label: t('home.sortRating') },
+    { value: 'name', label: t('home.sortName') },
+]))
 const gridSectionRef = ref(null)
 const isMobile = ref(false)
 let mobileMediaQuery = null
@@ -278,6 +290,7 @@ const filters = ref({
     country: '',
     city: '',
     price_range: '',
+    min_rating: '',
 })
 
 const cuisineKeys = ['uzbek', 'tajik', 'kazakh', 'kyrgyz', 'turkmen', 'turkish', 'arabic', 'persian', 'afghan', 'georgian', 'russian', 'european', 'asian', 'mixed']
@@ -441,7 +454,7 @@ const defaultPromoSlides = [
         title: 'Issiq chegirmalar',
         subtitle: 'Bugungi top restoranlardan maxsus takliflar',
         icon: 'fas fa-fire',
-        bg: 'linear-gradient(120deg, #0f6e56 0%, #1d9e75 100%)',
+        bg: 'linear-gradient(120deg, var(--color-primary-dark) 0%, var(--color-primary) 100%)',
         image: null,
     },
     {
@@ -450,7 +463,7 @@ const defaultPromoSlides = [
         title: 'Tez yetkazib berish',
         subtitle: 'Yaqin atrofdagi restoranlar 20-30 daqiqada',
         icon: 'fas fa-bolt',
-        bg: 'linear-gradient(120deg, #155c9a 0%, #1d89e4 100%)',
+        bg: 'linear-gradient(120deg, var(--color-info-dark) 0%, var(--color-info) 100%)',
         image: null,
     },
     {
@@ -459,7 +472,7 @@ const defaultPromoSlides = [
         title: 'Mashhur taomlar',
         subtitle: 'Eng ko‘p buyurtma qilingan taomlarni sinab ko‘ring',
         icon: 'fas fa-star',
-        bg: 'linear-gradient(120deg, #7a2f8f 0%, #bc4de0 100%)',
+        bg: 'linear-gradient(120deg, var(--color-primary-darker) 0%, var(--color-primary) 100%)',
         image: null,
     },
 ]
@@ -700,6 +713,12 @@ const handleSheetFoodType = (slug) => selectFoodType(slug)
 const handleSheetPrice = (value) => {
     filters.value.price_range = value
 }
+const handleSheetRating = (value) => {
+    filters.value.min_rating = value
+}
+const handleSheetSort = (value) => {
+    sortBy.value = value
+}
 const applyFiltersSheet = () => {
     showFiltersSheet.value = false
 }
@@ -721,75 +740,6 @@ const handleClickOutsideMenus = (event) => {
 
     if (showMoreMenu.value && moreMenuRef.value && !moreMenuRef.value.contains(target)) {
         showMoreMenu.value = false
-    }
-}
-
-const isLocalhost = () => {
-    const hostname = window.location.hostname
-    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1'
-}
-
-const requestCurrentPosition = (options) => {
-    return new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, options)
-    })
-}
-
-const getLocationErrorMessage = (error) => {
-    if (error?.message === 'SECURE_CONTEXT_REQUIRED') {
-        return 'GPS faqat `https` yoki `localhost` da ishlaydi'
-    }
-
-    if (error?.message === 'PERMISSION_DENIED') {
-        return 'Brauzerda location ruxsatini yoqing'
-    }
-
-    switch (error?.code) {
-        case 1:
-            return 'Joylashuv uchun ruxsat berilmadi'
-        case 2:
-            return 'Joylashuvni aniqlab bo\'lmadi'
-        case 3:
-            return 'GPS javobi kechikdi, qayta urinib ko\'ring'
-        default:
-            return 'Joylashuvni aniqlashda xatolik bo\'ldi'
-    }
-}
-
-const resolveCurrentPosition = async () => {
-    if (!window.isSecureContext && !isLocalhost()) {
-        throw new Error('SECURE_CONTEXT_REQUIRED')
-    }
-
-    if (navigator.permissions?.query) {
-        try {
-            const permission = await navigator.permissions.query({ name: 'geolocation' })
-            if (permission.state === 'denied') {
-                throw new Error('PERMISSION_DENIED')
-            }
-        } catch (error) {
-            if (error?.message === 'PERMISSION_DENIED') {
-                throw error
-            }
-        }
-    }
-
-    try {
-        return await requestCurrentPosition({
-            enableHighAccuracy: true,
-            timeout: 15000,
-            maximumAge: 0,
-        })
-    } catch (error) {
-        if (error?.code !== 3) {
-            throw error
-        }
-
-        return await requestCurrentPosition({
-            enableHighAccuracy: false,
-            timeout: 20000,
-            maximumAge: 300000,
-        })
     }
 }
 
@@ -825,6 +775,9 @@ const filtered = computed(() => {
     }
     if (filters.value.price_range) {
         result = result.filter(r => r.price_range === filters.value.price_range)
+    }
+    if (filters.value.min_rating) {
+        result = result.filter(r => (Number(r.rating) || 0) >= Number(filters.value.min_rating))
     }
 
     if (sortBy.value === 'distance' && locationActive.value) {
@@ -1398,11 +1351,10 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-.page { min-height: 100vh; background: #f4f5f7; font-family: 'Segoe UI', sans-serif; }
+.page { min-height: 100vh; background: var(--color-bg); font-family: var(--font-sans); }
 
 /* MAIN */
 .main { max-width: 1680px; width: 100%; margin: 18px auto 0; padding: 0 28px 40px; position: relative; z-index: 3; }
@@ -1411,22 +1363,22 @@ onBeforeUnmount(() => {
 .section-header {
     display: flex; justify-content: space-between; align-items: flex-end;
     margin-bottom: 20px;
-    background: white;
+    background: var(--color-surface);
     border-radius: 16px;
     padding: 16px 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 .section-title {
-    font-size: 18px; font-weight: 700; color: #1a1a1a;
+    font-size: 18px; font-weight: 700; color: var(--color-text);
     display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
 }
 .section-icon { color: #FF6B35; font-size: 16px; }
-.section-sub { font-size: 13px; color: #888; }
+.section-sub { font-size: 13px; color: var(--color-text-faint); }
 .section-sort-pill {
-    background: #f2faf7;
-    border: 1px solid #cae9de;
+    background: var(--color-primary-tint);
+    border: 1px solid var(--color-primary-tint);
     border-radius: 999px;
-    color: #125e49;
+    color: var(--color-primary-darker);
     padding: 8px 14px;
     font-size: 13px;
     font-weight: 600;
@@ -1434,18 +1386,18 @@ onBeforeUnmount(() => {
 
 /* SKELETON */
 .loading-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
-.skeleton-card { background: white; border-radius: 16px; overflow: hidden; }
-.skeleton-img { height: 180px; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+.skeleton-card { background: var(--color-surface); border-radius: 16px; overflow: hidden; }
+.skeleton-img { height: 180px; background: linear-gradient(90deg, var(--color-border-light) 25%, var(--color-border) 50%, var(--color-border-light) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
 .skeleton-body { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
-.skeleton-line { height: 12px; background: #f0f0f0; border-radius: 6px; }
+.skeleton-line { height: 12px; background: var(--color-border-light); border-radius: 6px; }
 .w70 { width: 70%; } .w90 { width: 90%; } .w50 { width: 50%; }
 @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
 
 /* EMPTY */
 .empty-state { text-align: center; padding: 80px 0; }
-.empty-icon { font-size: 56px; color: #ddd; margin-bottom: 16px; }
-.empty-state h3 { font-size: 20px; color: #333; margin-bottom: 8px; }
-.empty-state p { color: #999; }
+.empty-icon { font-size: 56px; color: var(--color-border); margin-bottom: 16px; }
+.empty-state h3 { font-size: 20px; color: var(--color-text); margin-bottom: 8px; }
+.empty-state p { color: var(--color-text-faint); }
 
 /* GRID */
 .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
@@ -1465,18 +1417,18 @@ onBeforeUnmount(() => {
     padding: 10px 16px;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.92);
-    border: 1px solid rgba(15, 110, 86, 0.12);
-    color: #4b5563;
+    border: 1px solid rgba(78,63,203, 0.12);
+    color: var(--color-text-muted);
     box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
 }
-.load-more-status.done { color: #0f6e56; }
+.load-more-status.done { color: var(--color-primary-dark); }
 
 /* FOOTER */
-.footer { background: #1a1a1a; padding: 24px; margin-top: 20px; }
+.footer { background: var(--color-text); padding: 24px; margin-top: 20px; }
 .footer-inner { max-width: 1680px; margin: 0 auto; padding: 0 28px; display: flex; justify-content: space-between; align-items: center; }
 .footer-brand { display: flex; align-items: center; gap: 8px; color: white; font-size: 16px; font-weight: 600; }
-.footer-brand i { color: #1D9E75; }
-.footer-copy { font-size: 13px; color: #666; }
+.footer-brand i { color: var(--color-primary); }
+.footer-copy { font-size: 13px; color: var(--color-text-muted); }
 
 @media (max-width: 1440px) {
     .grid,

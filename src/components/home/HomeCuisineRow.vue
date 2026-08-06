@@ -48,15 +48,15 @@ defineEmits(['seeAll', 'select'])
     align-items: flex-end;
     margin-bottom: 12px;
 }
-.cuisine-row-title { font-size: 17px; font-weight: 700; color: #1a1a1a; margin-bottom: 2px; }
-.cuisine-row-sub { font-size: 12px; color: #888; }
+.cuisine-row-title { font-size: 17px; font-weight: 700; color: var(--color-text); margin-bottom: 2px; }
+.cuisine-row-sub { font-size: 12px; color: var(--color-text-faint); }
 .cuisine-row-seeall {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     border: none;
     background: none;
-    color: #0f6e56;
+    color: var(--color-primary-dark);
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;

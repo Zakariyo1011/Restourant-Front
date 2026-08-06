@@ -19,6 +19,14 @@
                 <i class="fas fa-star"></i>
                 {{ Number(restaurant.rating).toFixed(1) }}
             </div>
+            <button
+                type="button"
+                class="bookmark-btn"
+                :class="{ 'bookmark-btn--active': favorites.isFavorited(restaurant.id) }"
+                @click.stop="favorites.toggle(restaurant)"
+            >
+                <i :class="favorites.isFavorited(restaurant.id) ? 'fas fa-bookmark' : 'far fa-bookmark'"></i>
+            </button>
         </div>
         <div class="card-body">
             <h3 class="card-title">{{ restaurant.name }}</h3>
@@ -54,6 +62,9 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useFavoritesStore } from '../../stores/favorites'
+
+const favorites = useFavoritesStore()
 
 const props = defineProps({
     restaurant: {
@@ -85,7 +96,7 @@ const imageSrc = computed(() => props.resolveImageUrl(props.getRestaurantImageUr
 
 <style scoped>
 .card {
-    background: white;
+    background: var(--color-surface);
     border-radius: 16px;
     overflow: hidden;
     cursor: pointer;
@@ -99,36 +110,36 @@ const imageSrc = computed(() => props.resolveImageUrl(props.getRestaurantImageUr
 .card:hover .card-img { transform: scale(1.05); }
 .card-no-img {
     width: 100%; height: 100%;
-    background: linear-gradient(135deg, #f0f0f0, #e8e8e8);
+    background: linear-gradient(135deg, var(--color-border-light), var(--color-border));
     display: flex; align-items: center; justify-content: center;
-    font-size: 40px; color: #ccc;
+    font-size: 40px; color: var(--color-border);
 }
 
 .card-body { padding: 16px; }
-.card-title { font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px; }
+.card-title { font-size: 16px; font-weight: 700; color: var(--color-text); margin-bottom: 6px; }
 .card-desc {
-    font-size: 13px; color: #777; margin-bottom: 12px;
+    font-size: 13px; color: var(--color-text-faint); margin-bottom: 12px;
     display: -webkit-box; -webkit-line-clamp: 2;
     line-clamp: 2;
     -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5;
 }
 .card-info { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-.info-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #555; }
-.info-item i { color: #1D9E75; font-size: 11px; width: 14px; }
+.info-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--color-text-muted); }
+.info-item i { color: var(--color-primary); font-size: 11px; width: 14px; }
 .card-cta {
     display: flex; justify-content: space-between; align-items: center;
     padding-top: 12px;
-    border-top: 1px solid #f0f0f0;
-    font-size: 13px; font-weight: 600; color: #1D9E75;
+    border-top: 1px solid var(--color-border-light);
+    font-size: 13px; font-weight: 600; color: var(--color-primary);
 }
 .card-cuisine {
     display: inline-flex; align-items: center; gap: 4px;
-    background: #f0f0f0; color: #555;
+    background: var(--color-border-light); color: var(--color-text-muted);
     padding: 3px 8px; border-radius: 6px;
     font-size: 11px; margin-bottom: 6px;
 }
 .distance-badge {
-    position: absolute; top: 12px; right: 12px;
+    position: absolute; bottom: 12px; right: 12px;
     background: rgba(0,0,0,0.6); color: white;
     padding: 4px 10px; border-radius: 20px;
     font-size: 11px; font-weight: 500;
@@ -136,12 +147,27 @@ const imageSrc = computed(() => props.resolveImageUrl(props.getRestaurantImageUr
 }
 .rating-badge {
     position: absolute; top: 12px; left: 12px;
-    background: rgba(255,255,255,0.92); color: #1a1a1a;
+    background: rgba(255,255,255,0.92); color: var(--color-text);
     padding: 4px 10px; border-radius: 20px;
     font-size: 11px; font-weight: 700;
     display: flex; align-items: center; gap: 4px;
 }
 .rating-badge i { color: #f5a623; font-size: 10px; }
+.bookmark-btn {
+    position: absolute; top: 12px; right: 12px;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.92);
+    border: none;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font-size: 13px;
+    transition: color 0.15s, transform 0.15s;
+    z-index: 2;
+}
+.bookmark-btn:hover { transform: scale(1.08); }
+.bookmark-btn--active { color: var(--color-primary); }
 
 /* COMPACT (gorizontal scroll qatorlari uchun) */
 .card-compact {

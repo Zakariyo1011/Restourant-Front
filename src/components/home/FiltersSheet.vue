@@ -75,6 +75,41 @@
                             </button>
                         </div>
                     </div>
+
+                    <div class="filters-group">
+                        <h4>{{ $t('home.filterRating') }}</h4>
+                        <div class="filters-chip-list">
+                            <button
+                                class="filters-chip"
+                                :class="{ active: !selectedRating }"
+                                @click="$emit('selectRating', '')"
+                            >
+                                {{ $t('home.all') }}
+                            </button>
+                            <button
+                                v-for="rating in ratingOptions"
+                                :key="rating"
+                                class="filters-chip"
+                                :class="{ active: selectedRating === rating }"
+                                @click="$emit('selectRating', rating)"
+                            >
+                                <i class="fas fa-star"></i> {{ rating }}+
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="filters-group" v-if="sortOptions.length">
+                        <h4>{{ $t('home.sortBy') }}</h4>
+                        <select
+                            class="filters-sort-select"
+                            :value="selectedSort"
+                            @change="$emit('selectSort', $event.target.value)"
+                        >
+                            <option v-for="opt in sortOptions" :key="opt.value" :value="opt.value">
+                                {{ opt.label }}
+                            </option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="filters-footer">
@@ -96,10 +131,14 @@ defineProps({
     selectedFoodType: { type: String, default: '' },
     priceRanges: { type: Array, default: () => [] },
     selectedPriceRange: { type: String, default: '' },
+    ratingOptions: { type: Array, default: () => ['4.5', '4', '3.5'] },
+    selectedRating: { type: String, default: '' },
+    sortOptions: { type: Array, default: () => [] },
+    selectedSort: { type: String, default: '' },
     resultCount: { type: Number, default: 0 },
 })
 
-defineEmits(['close', 'selectCuisine', 'selectFoodType', 'selectPriceRange', 'apply'])
+defineEmits(['close', 'selectCuisine', 'selectFoodType', 'selectPriceRange', 'selectRating', 'selectSort', 'apply'])
 </script>
 
 <style scoped>
@@ -116,11 +155,11 @@ defineEmits(['close', 'selectCuisine', 'selectFoodType', 'selectPriceRange', 'ap
 .filters-sheet {
     width: min(560px, 100%);
     max-height: 88vh;
-    background: #ffffff;
+    background: var(--color-surface);
     border-radius: 24px 24px 0 0;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 -12px 40px rgba(8, 52, 41, 0.22);
+    box-shadow: var(--shadow-lg);
 }
 .filters-head {
     display: flex;
@@ -128,13 +167,13 @@ defineEmits(['close', 'selectCuisine', 'selectFoodType', 'selectPriceRange', 'ap
     justify-content: space-between;
     padding: 18px 20px 8px;
 }
-.filters-head h3 { font-size: 18px; font-weight: 800; color: #172b26; }
+.filters-head h3 { font-size: 18px; font-weight: 800; color: var(--color-text); }
 .filters-close {
     width: 36px; height: 36px;
     border-radius: 50%;
-    border: 1px solid #e0ece7;
-    background: #f7fcfa;
-    color: #5d746d;
+    border: 1px solid var(--color-primary-tint);
+    background: var(--color-primary-tint);
+    color: var(--color-text-muted);
     cursor: pointer;
 }
 .filters-body {
@@ -144,12 +183,12 @@ defineEmits(['close', 'selectCuisine', 'selectFoodType', 'selectPriceRange', 'ap
     flex-direction: column;
     gap: 20px;
 }
-.filters-group h4 { font-size: 14px; font-weight: 700; color: #35544c; margin-bottom: 10px; }
+.filters-group h4 { font-size: 14px; font-weight: 700; color: var(--color-text-muted); margin-bottom: 10px; }
 .filters-chip-list { display: flex; flex-wrap: wrap; gap: 8px; }
 .filters-chip {
-    border: 1px solid #dce8e3;
-    background: #f9fcfb;
-    color: #35544c;
+    border: 1px solid var(--color-primary-tint);
+    background: var(--color-primary-tint);
+    color: var(--color-text-muted);
     border-radius: 999px;
     padding: 9px 14px;
     font-size: 13px;
@@ -158,26 +197,38 @@ defineEmits(['close', 'selectCuisine', 'selectFoodType', 'selectPriceRange', 'ap
 }
 .filters-chip.active,
 .filters-chip:hover {
-    background: #e8f6f1;
-    border-color: #83cdb6;
-    color: #0f6e56;
+    background: var(--color-primary-tint);
+    border-color: var(--color-primary-tint-strong);
+    color: var(--color-primary-dark);
 }
 .filters-footer {
     padding: 12px 20px 20px;
-    border-top: 1px solid #f0f3f2;
+    border-top: 1px solid var(--color-primary-tint);
 }
 .filters-show-btn {
     width: 100%;
     min-height: 52px;
     border: none;
     border-radius: 16px;
-    background: #1D9E75;
+    background: var(--color-primary);
     color: white;
     font-size: 15px;
     font-weight: 700;
     cursor: pointer;
 }
-.filters-show-btn:hover { background: #0F6E56; }
+.filters-show-btn:hover { background: var(--color-primary-dark); }
+
+.filters-sort-select {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+}
 
 .sheet-fade-enter-active,
 .sheet-fade-leave-active { transition: opacity 0.2s ease; }

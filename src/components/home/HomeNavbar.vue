@@ -27,21 +27,15 @@
             </button>
         </div>
         <div class="nav-right">
-            <LanguageSwitcher />
-            <router-link v-if="!auth?.isLoggedIn" to="/login" class="btn-login">
-                <i class="fas fa-sign-in-alt"></i>
-                <span>{{ $t('nav.login') }}</span>
+            <LanguageSwitcher class="nav-lang" />
+            <router-link v-if="auth?.isAdmin" to="/admin" class="btn-login">
+                <i class="fas fa-shield-alt"></i>
+                <span>{{ $t('nav.admin') }}</span>
             </router-link>
-            <template v-else>
-                <router-link v-if="auth?.isAdmin" to="/admin" class="btn-login">
-                    <i class="fas fa-shield-alt"></i>
-                    <span>{{ $t('nav.admin') }}</span>
-                </router-link>
-                <router-link v-else to="/dashboard" class="btn-login">
-                    <i class="fas fa-th-large"></i>
-                    <span>{{ $t('nav.dashboard') }}</span>
-                </router-link>
-            </template>
+            <router-link v-else-if="auth?.isOwner" to="/dashboard" class="btn-login">
+                <i class="fas fa-th-large"></i>
+                <span>{{ $t('nav.dashboard') }}</span>
+            </router-link>
         </div>
     </nav>
 </template>
@@ -74,8 +68,8 @@ defineEmits(['update:searchQuery', 'openAddressModal'])
     align-items: center;
     padding: 0 24px;
     min-height: 72px;
-    background: white;
-    border-bottom: 1px solid #e8edf1;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border-light);
     position: sticky;
     top: 0;
     z-index: 100;
@@ -92,18 +86,18 @@ defineEmits(['update:searchQuery', 'openAddressModal'])
 }
 .brand-icon {
     width: 36px; height: 36px;
-    background: linear-gradient(135deg, #1D9E75, #0F6E56);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
     border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
     color: white; font-size: 16px;
 }
-.brand-name { font-size: 18px; font-weight: 700; color: #1a1a1a; }
-.brand-accent { color: #1D9E75; }
+.brand-name { font-size: 18px; font-weight: 700; color: var(--color-text); }
+.brand-accent { color: var(--color-primary); }
 .nav-right { display: flex; align-items: center; gap: 10px; }
 .btn-login {
     display: flex; align-items: center; gap: 6px;
     padding: 9px 18px;
-    background: #1D9E75;
+    background: var(--color-primary);
     color: white;
     border-radius: 10px;
     text-decoration: none;
@@ -111,35 +105,35 @@ defineEmits(['update:searchQuery', 'openAddressModal'])
     font-weight: 500;
     transition: background 0.2s;
 }
-.btn-login:hover { background: #0F6E56; }
+.btn-login:hover { background: var(--color-primary-dark); }
 .search-box {
     display: flex; align-items: center;
-    background: #f1f3f4;
+    background: var(--color-border-light);
     border-radius: 16px;
     padding: 0 14px;
     gap: 8px;
 }
-.search-icon { font-size: 16px; color: #aaa; }
+.search-icon { font-size: 16px; color: var(--color-text-faint); }
 .nav-search-box {
     flex: 1;
     max-width: 620px;
     min-height: 48px;
     box-shadow: none;
     border-radius: 16px;
-    background: #f1f3f4;
+    background: var(--color-border-light);
     border: 1px solid transparent;
     transition: border-color 0.2s ease, background 0.2s ease;
 }
 .nav-search-box:focus-within {
-    background: #ffffff;
-    border-color: #c8d6df;
+    background: var(--color-surface);
+    border-color: var(--color-primary-tint-strong);
 }
 .search-input {
     flex: 1; border: none; outline: none;
     font-size: 15px; padding: 12px 0;
-    color: #1a1a1a; background: transparent;
+    color: var(--color-text); background: transparent;
 }
-.search-input::placeholder { color: #88949c; }
+.search-input::placeholder { color: var(--color-text-faint); }
 .address-trigger {
     display: inline-flex;
     align-items: center;
@@ -147,14 +141,14 @@ defineEmits(['update:searchQuery', 'openAddressModal'])
     gap: 8px;
     min-width: 190px;
     padding: 0 18px;
-    border: 1px solid #148665;
+    border: 1px solid var(--color-primary-dark);
     border-radius: 16px;
-    background: #1D9E75;
+    background: var(--color-primary);
     color: white;
     font-size: 14px;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 8px 18px rgba(15,110,86,0.2);
+    box-shadow: 0 8px 18px rgba(78,63,203,0.2);
     transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
 }
 .nav-address-trigger {
@@ -163,14 +157,19 @@ defineEmits(['update:searchQuery', 'openAddressModal'])
 }
 .address-trigger:hover {
     transform: translateY(-1px);
-    box-shadow: 0 12px 24px rgba(15,110,86,0.26);
-    background: #0F6E56;
+    box-shadow: 0 12px 24px rgba(78,63,203,0.26);
+    background: var(--color-primary-dark);
 }
 .address-trigger span {
     max-width: 160px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+@media (min-width: 769px) {
+    .nav-brand,
+    .nav-lang { display: none; }
 }
 
 @media (max-width: 768px) {
@@ -199,18 +198,18 @@ defineEmits(['update:searchQuery', 'openAddressModal'])
         min-height: 48px;
         padding: 0 18px;
         border-radius: 24px;
-        background: #f1f3f4;
+        background: var(--color-border-light);
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     }
-    .nav-search-box .search-icon { font-size: 16px; color: #1a1a1a; }
+    .nav-search-box .search-icon { font-size: 16px; color: var(--color-text); }
     .nav-search-box .search-input {
         text-align: center;
         font-size: 15px;
         font-weight: 600;
         padding: 11px 0;
-        color: #1a1a1a;
+        color: var(--color-text);
     }
-    .nav-search-box .search-input::placeholder { color: #1a1a1a; font-weight: 600; }
+    .nav-search-box .search-input::placeholder { color: var(--color-text); font-weight: 600; }
 
     /* Yandex uslubidagi qidiruv: manzil tugmasi mobil kirish qismida ko'rinmaydi */
     .nav-address-trigger { display: none; }

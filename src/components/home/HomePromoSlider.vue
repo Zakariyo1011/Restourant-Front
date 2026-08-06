@@ -184,13 +184,13 @@ defineEmits(['prev', 'next', 'go'])
     padding: 0;
     border-radius: 999px;
     border: none;
-    background: #c5d8d1;
+    background: var(--color-primary-tint-strong);
     cursor: pointer;
     transition: all 0.25s;
 }
 .promo-dot.active {
     width: 22px;
-    background: #1D9E75;
+    background: var(--color-primary);
 }
 
 @media (max-width: 768px) {

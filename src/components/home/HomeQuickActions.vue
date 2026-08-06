@@ -69,37 +69,37 @@ defineEmits(['openFilters', 'toggleNearby', 'toggleTopRated', 'selectCuisine'])
     align-items: center;
     gap: 7px;
     white-space: nowrap;
-    border: 1px solid #dce8e3;
-    background: #ffffff;
-    color: #35544c;
+    border: 1px solid var(--color-primary-tint);
+    background: var(--color-surface);
+    color: var(--color-text-muted);
     border-radius: 999px;
     padding: 10px 16px;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
-    box-shadow: 0 2px 6px rgba(12, 38, 32, 0.05);
+    box-shadow: var(--shadow-sm);
 }
-.quick-chip i { font-size: 13px; color: #7a928b; }
+.quick-chip i { font-size: 13px; color: var(--color-text-muted); }
 .quick-chip.active,
 .quick-chip:hover {
-    background: #e8f6f1;
-    border-color: #83cdb6;
-    color: #0f6e56;
+    background: var(--color-primary-tint);
+    border-color: var(--color-primary-tint-strong);
+    color: var(--color-primary-dark);
 }
 .quick-chip.active i,
-.quick-chip:hover i { color: #0f6e56; }
+.quick-chip:hover i { color: var(--color-primary-dark); }
 
-.quick-chip-icon { background: #172b26; color: white; border-color: #172b26; }
+.quick-chip-icon { background: var(--color-text); color: white; border-color: var(--color-text); }
 .quick-chip-icon i { color: white; }
-.quick-chip-icon:hover { background: #0f1e1a; color: white; }
+.quick-chip-icon:hover { background: var(--color-text); color: white; }
 .quick-chip-icon:hover i { color: white; }
 
 .quick-divider {
     flex: none;
     width: 1px;
     align-self: stretch;
-    background: #e2ebe7;
+    background: var(--color-primary-tint);
     margin: 4px 2px;
 }
 

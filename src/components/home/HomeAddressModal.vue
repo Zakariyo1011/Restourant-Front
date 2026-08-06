@@ -113,11 +113,11 @@ defineEmits(['close', 'update:addressQuery', 'applyAddress', 'selectSuggestion',
 }
 .address-modal {
     width: min(980px, 100%);
-    background: #ffffff;
-    color: #18322b;
+    background: var(--color-surface);
+    color: var(--color-text);
     border-radius: 28px;
     padding: 26px;
-    box-shadow: 0 22px 70px rgba(8, 52, 41, 0.2);
+    box-shadow: var(--shadow-lg);
 }
 .address-modal-head {
     display: flex;
@@ -127,13 +127,13 @@ defineEmits(['close', 'update:addressQuery', 'applyAddress', 'selectSuggestion',
     margin-bottom: 18px;
 }
 .address-modal-head h3 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
-.address-modal-head p  { color: #6c7f79; font-size: 13px; }
+.address-modal-head p  { color: var(--color-text-muted); font-size: 13px; }
 .modal-close-btn {
     width: 40px; height: 40px;
     border-radius: 50%;
-    border: 1px solid #d8ebe4;
-    background: #f7fcfa;
-    color: #5d746d;
+    border: 1px solid var(--color-primary-tint);
+    background: var(--color-primary-tint);
+    color: var(--color-text-muted);
     cursor: pointer;
 }
 .address-modal-search-row {
@@ -146,27 +146,27 @@ defineEmits(['close', 'update:addressQuery', 'applyAddress', 'selectSuggestion',
     display: flex;
     align-items: center;
     gap: 10px;
-    background: #f8fcfb;
-    border: 1px solid #d4e8e2;
+    background: var(--color-primary-tint);
+    border: 1px solid var(--color-primary-tint);
     border-radius: 16px;
     padding: 0 16px;
     min-height: 56px;
 }
-.address-modal-input-wrap i { color: #7da098; }
+.address-modal-input-wrap i { color: var(--color-text-faint); }
 .address-modal-input {
     width: 100%;
     border: none;
     outline: none;
     background: transparent;
-    color: #17322a;
+    color: var(--color-text);
     font-size: 14px;
 }
-.address-modal-input::placeholder { color: #8aa59e; }
+.address-modal-input::placeholder { color: var(--color-text-faint); }
 .address-confirm-btn,
 .address-apply-btn {
-    border: 1px solid #168b67;
+    border: 1px solid var(--color-primary-dark);
     border-radius: 16px;
-    background: #1D9E75;
+    background: var(--color-primary);
     color: white;
     font-size: 14px;
     font-weight: 700;
@@ -181,11 +181,11 @@ defineEmits(['close', 'update:addressQuery', 'applyAddress', 'selectSuggestion',
     margin-top: 12px;
     padding: 12px 14px;
     border-radius: 14px;
-    background: #f5fbf8;
-    color: #2b6b57;
+    background: var(--color-primary-tint);
+    color: var(--color-text-muted);
     font-size: 14px;
 }
-.address-search-status.empty { background: #fff7eb; color: #9a6100; }
+.address-search-status.empty { background: var(--color-warning-tint); color: var(--color-warning-dark); }
 
 .address-suggestions {
     display: grid;
@@ -201,22 +201,22 @@ defineEmits(['close', 'update:addressQuery', 'applyAddress', 'selectSuggestion',
     gap: 4px;
     padding: 12px 14px;
     border-radius: 14px;
-    border: 1px solid #d6ebe4;
-    background: #f9fdfb;
-    color: #17332b;
+    border: 1px solid var(--color-primary-tint);
+    background: var(--color-primary-tint);
+    color: var(--color-text);
     cursor: pointer;
     text-align: left;
 }
-.address-suggestion:hover { border-color: #1D9E75; background: #eef8f4; }
-.address-suggestion span { color: #68867d; font-size: 12px; }
+.address-suggestion:hover { border-color: var(--color-primary); background: var(--color-primary-tint); }
+.address-suggestion span { color: var(--color-text-muted); font-size: 12px; }
 
 .address-map-shell {
     position: relative;
     overflow: hidden;
     border-radius: 22px;
-    border: 1px solid #d7ebe4;
+    border: 1px solid var(--color-primary-tint);
 }
-.address-map { width: 100%; height: 340px; background: #eef5f2; }
+.address-map { width: 100%; height: 340px; background: var(--color-primary-tint); }
 .map-gps-btn {
     position: absolute;
     left: 12px;
@@ -229,11 +229,11 @@ defineEmits(['close', 'update:addressQuery', 'applyAddress', 'selectSuggestion',
     border-radius: 999px;
     padding: 8px 12px;
     background: rgba(255, 255, 255, 0.95);
-    color: #0f6e56;
+    color: var(--color-primary-dark);
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 8px 20px rgba(15, 110, 86, 0.18);
+    box-shadow: 0 8px 20px rgba(78,63,203, 0.18);
 }
 .map-gps-btn:disabled { opacity: 0.7; cursor: not-allowed; }
 
@@ -244,7 +244,7 @@ defineEmits(['close', 'update:addressQuery', 'applyAddress', 'selectSuggestion',
     gap: 16px;
     margin-bottom: 14px;
 }
-.toolbar-note { color: #5c7a72; font-size: 13px; }
+.toolbar-note { color: var(--color-text-muted); font-size: 13px; }
 
 .address-modal-footer {
     margin-top: 16px;
@@ -254,13 +254,13 @@ defineEmits(['close', 'update:addressQuery', 'applyAddress', 'selectSuggestion',
     gap: 16px;
 }
 .address-preview { display: flex; align-items: center; gap: 12px; }
-.address-preview i   { color: #1D9E75; font-size: 18px; }
+.address-preview i   { color: var(--color-primary); font-size: 18px; }
 .address-preview strong { display: block; font-size: 14px; }
-.address-preview span   { color: #6f8a83; font-size: 12px; }
+.address-preview span   { color: var(--color-text-muted); font-size: 12px; }
 .address-apply-btn {
     min-width: 150px;
     min-height: 48px;
-    background: #0F6E56;
+    background: var(--color-primary-dark);
     color: white;
 }
 

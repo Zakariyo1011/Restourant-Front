@@ -20,8 +20,8 @@
 
                 <div class="features">
                     <div class="feature-item">
-                        <div class="feature-icon green">
-                            <i class="fas fa-chart-line"></i>
+                        <div class="feature-icon">
+                            <i class="fas fa-bolt"></i>
                         </div>
                         <div>
                             <strong>{{ $t('login.feature1Title') }}</strong>
@@ -29,7 +29,7 @@
                         </div>
                     </div>
                     <div class="feature-item">
-                        <div class="feature-icon blue">
+                        <div class="feature-icon">
                             <i class="fas fa-map-marked-alt"></i>
                         </div>
                         <div>
@@ -38,8 +38,8 @@
                         </div>
                     </div>
                     <div class="feature-item">
-                        <div class="feature-icon orange">
-                            <i class="fas fa-shield-alt"></i>
+                        <div class="feature-icon">
+                            <i class="fas fa-star"></i>
                         </div>
                         <div>
                             <strong>{{ $t('login.feature3Title') }}</strong>
@@ -53,14 +53,9 @@
         <!-- Right panel -->
         <div class="right-panel">
             <div class="login-box">
-                <router-link to="/" class="back-link">
-                    <i class="fas fa-arrow-left"></i>
-                    {{ $t('login.backHome') }}
-                </router-link>
-
                 <div class="login-header">
                     <div class="login-icon">
-                        <i class="fas fa-user-circle"></i>
+                        <i class="fas fa-utensils"></i>
                     </div>
                     <h2>{{ $t('login.welcome') }}</h2>
                     <p>{{ $t('login.welcomeSub') }}</p>
@@ -78,34 +73,7 @@
                     <span>{{ $t('login.googleBtn') }}</span>
                 </button>
 
-                <div class="divider">
-                    <span>{{ $t('login.or') }}</span>
-                </div>
-
-                <div class="info-box">
-                    <i class="fas fa-info-circle"></i>
-                    <p>{{ $t('login.infoTextPrefix') }} <router-link to="/">{{ $t('nav.home') }}</router-link> {{ $t('login.infoTextSuffix') }}</p>
-                </div>
-
-                <div class="steps">
-                    <p class="steps-title">{{ $t('login.stepsTitle') }}</p>
-                    <div class="step">
-                        <div class="step-num">1</div>
-                        <span>{{ $t('login.step1') }}</span>
-                    </div>
-                    <div class="step">
-                        <div class="step-num">2</div>
-                        <span>{{ $t('login.step2') }}</span>
-                    </div>
-                    <div class="step">
-                        <div class="step-num">3</div>
-                        <span>{{ $t('login.step3') }}</span>
-                    </div>
-                    <div class="step">
-                        <div class="step-num">4</div>
-                        <span>{{ $t('login.step4') }}</span>
-                    </div>
-                </div>
+                <p class="fine-print">{{ $t('login.finePrint') }}</p>
             </div>
         </div>
     </div>
@@ -122,7 +90,6 @@ const loginWithGoogle = () => {
 </script>
 
 <style scoped>
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -144,13 +111,13 @@ const loginWithGoogle = () => {
 .login-page {
     min-height: 100vh;
     display: flex;
-    font-family: 'Segoe UI', sans-serif;
+    font-family: var(--font-sans);
 }
 
 /* LEFT PANEL */
 .left-panel {
     flex: 1;
-    background: linear-gradient(135deg, #0F6E56 0%, #1D9E75 60%, #5DCAA5 100%);
+    background: linear-gradient(135deg, var(--color-primary-darker) 0%, var(--color-primary) 60%, var(--color-primary-light) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -210,89 +177,53 @@ const loginWithGoogle = () => {
     display: flex; align-items: center; justify-content: center;
     font-size: 16px; flex-shrink: 0;
 }
-.feature-icon.green { background: rgba(255,255,255,0.2); color: white; }
-.feature-icon.blue { background: rgba(255,255,255,0.2); color: white; }
-.feature-icon.orange { background: rgba(255,255,255,0.2); color: white; }
+.feature-icon { background: rgba(255,255,255,0.2); color: white; }
 .feature-item strong { display: block; color: white; font-size: 14px; margin-bottom: 2px; }
 .feature-item p { color: rgba(255,255,255,0.75); font-size: 12px; }
 
 /* RIGHT PANEL */
 .right-panel {
     width: 480px;
-    background: #f7f8fa;
+    background: var(--color-bg);
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     padding: 40px 32px;
 }
-.back-link {
-    display: inline-flex; align-items: center; gap: 6px;
-    color: #666; font-size: 13px; text-decoration: none;
-    margin-bottom: 32px;
-    transition: color 0.2s;
-}
-.back-link:hover { color: #1D9E75; }
-
 .login-header { text-align: center; margin-bottom: 32px; }
 .login-icon {
-    font-size: 48px; color: #1D9E75;
+    font-size: 48px; color: var(--color-primary);
     margin-bottom: 16px;
 }
-.login-header h2 { font-size: 26px; font-weight: 700; color: #1a1a1a; margin-bottom: 6px; }
-.login-header p { font-size: 14px; color: #888; }
+.login-header h2 { font-size: 26px; font-weight: 700; color: var(--color-text); margin-bottom: 6px; }
+.login-header p { font-size: 14px; color: var(--color-text-faint); }
 
 .google-btn {
     width: 100%;
     display: flex; align-items: center; justify-content: center; gap: 12px;
     padding: 14px;
-    background: white;
-    border: 1.5px solid #e8e8e8;
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-border);
     border-radius: 12px;
-    font-size: 15px; font-weight: 600; color: #1a1a1a;
+    font-size: 15px; font-weight: 600; color: var(--color-text);
     cursor: pointer;
     transition: all 0.2s;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 .google-btn:hover {
-    border-color: #1D9E75;
-    box-shadow: 0 4px 16px rgba(29,158,117,0.15);
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 16px rgba(108,92,231,0.15);
     transform: translateY(-1px);
 }
 .google-logo { display: flex; align-items: center; }
 
-.divider {
-    display: flex; align-items: center; gap: 12px;
-    margin: 20px 0; color: #ccc; font-size: 13px;
-}
-.divider::before, .divider::after {
-    content: ''; flex: 1; height: 1px; background: #e8e8e8;
-}
-
-.info-box {
-    display: flex; gap: 10px; align-items: flex-start;
-    background: #E1F5EE; border-radius: 10px;
-    padding: 12px 14px; margin-bottom: 24px;
-}
-.info-box i { color: #1D9E75; margin-top: 2px; flex-shrink: 0; }
-.info-box p { font-size: 13px; color: #0F6E56; line-height: 1.5; }
-.info-box a { color: #0F6E56; font-weight: 600; }
-
-.steps-title { font-size: 13px; font-weight: 600; color: #444; margin-bottom: 12px; }
-.steps { background: white; border-radius: 12px; padding: 16px; border: 1px solid #e8e8e8; }
-.step {
-    display: flex; align-items: center; gap: 12px;
-    padding: 8px 0;
-    border-bottom: 1px solid #f5f5f5;
-    font-size: 13px; color: #555;
-}
-.step:last-child { border-bottom: none; padding-bottom: 0; }
-.step-num {
-    width: 24px; height: 24px;
-    background: #1D9E75; color: white;
-    border-radius: 50%; font-size: 12px; font-weight: 700;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
+.fine-print {
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--color-text-faint);
+    margin-top: 20px;
+    line-height: 1.5;
 }
 
 /* MOBILE */

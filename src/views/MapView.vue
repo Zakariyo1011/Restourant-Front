@@ -79,10 +79,12 @@
             :selected-food-type="''"
             :price-ranges="priceRanges"
             :selected-price-range="selectedPriceRange"
+            :selected-rating="selectedRating"
             :result-count="displayedRestaurants.length"
             @close="showFilters = false"
             @selectCuisine="selectedCuisine = $event"
             @selectPriceRange="selectedPriceRange = $event"
+            @selectRating="selectedRating = $event"
             @apply="showFilters = false"
         />
     </div>
@@ -116,6 +118,7 @@ const showFilters = ref(false)
 const searchQuery = ref('')
 const selectedCuisine = ref('')
 const selectedPriceRange = ref('')
+const selectedRating = ref('')
 
 const priceRanges = ['$', '$$', '$$$']
 const cuisineKeys = ['uzbek', 'tajik', 'kazakh', 'kyrgyz', 'turkmen', 'turkish', 'arabic', 'persian', 'afghan', 'georgian', 'russian', 'european', 'asian', 'mixed']
@@ -139,6 +142,9 @@ const displayedRestaurants = computed(() => {
     }
     if (selectedPriceRange.value) {
         result = result.filter(r => r.price_range === selectedPriceRange.value)
+    }
+    if (selectedRating.value) {
+        result = result.filter(r => (Number(r.rating) || 0) >= Number(selectedRating.value))
     }
 
     return result
@@ -222,7 +228,7 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.map-page { position: fixed; inset: 0; background: #eef2f0; }
+.map-page { position: fixed; inset: 0; background: var(--color-primary-tint); }
 .map-canvas { width: 100%; height: 100%; }
 
 .map-back-btn {
@@ -233,8 +239,8 @@ onBeforeUnmount(() => {
     width: 44px; height: 44px;
     border: none;
     border-radius: 50%;
-    background: white;
-    color: #172b26;
+    background: var(--color-surface);
+    color: var(--color-text);
     box-shadow: 0 6px 18px rgba(12, 38, 32, 0.18);
     cursor: pointer;
 }
@@ -248,15 +254,15 @@ onBeforeUnmount(() => {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: white;
+    background: var(--color-surface);
     border-radius: 16px;
     padding: 0 14px;
     min-height: 44px;
     box-shadow: 0 6px 18px rgba(12, 38, 32, 0.18);
 }
-.map-search-bar i { color: #9aa79f; }
+.map-search-bar i { color: var(--color-text-faint); }
 .map-search-bar input { flex: 1; border: none; outline: none; font-size: 14px; }
-.map-search-close { border: none; background: none; color: #9aa79f; cursor: pointer; }
+.map-search-close { border: none; background: none; color: var(--color-text-faint); cursor: pointer; }
 
 .map-bottom-controls {
     position: absolute;
@@ -276,8 +282,8 @@ onBeforeUnmount(() => {
     min-height: 50px;
     border: none;
     border-radius: 16px;
-    background: white;
-    color: #172b26;
+    background: var(--color-surface);
+    color: var(--color-text);
     font-size: 14px;
     font-weight: 600;
     box-shadow: 0 6px 18px rgba(12, 38, 32, 0.18);
@@ -288,7 +294,7 @@ onBeforeUnmount(() => {
     position: absolute;
     left: 0; right: 0; bottom: 0;
     z-index: 410;
-    background: white;
+    background: var(--color-surface);
     border-radius: 22px 22px 0 0;
     box-shadow: 0 -8px 30px rgba(12, 38, 32, 0.16);
     height: 172px;
@@ -306,10 +312,10 @@ onBeforeUnmount(() => {
     padding: 10px 40px 4px;
     cursor: pointer;
 }
-.handle-bar { display: block; width: 40px; height: 4px; border-radius: 4px; background: #d7ddd9; }
+.handle-bar { display: block; width: 40px; height: 4px; border-radius: 4px; background: var(--color-border); }
 
-.map-sheet-count { text-align: center; font-size: 13px; color: #666; margin-bottom: 8px; }
-.map-sheet-status { text-align: center; color: #9aa79f; padding: 20px 0; }
+.map-sheet-count { text-align: center; font-size: 13px; color: var(--color-text-muted); margin-bottom: 8px; }
+.map-sheet-status { text-align: center; color: var(--color-text-faint); padding: 20px 0; }
 
 .map-sheet-scroll {
     display: flex;

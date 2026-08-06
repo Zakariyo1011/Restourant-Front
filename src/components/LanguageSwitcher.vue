@@ -74,20 +74,20 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside))
     align-items: center;
     gap: 6px;
     padding: 8px 12px;
-    background: white;
-    border: 1.5px solid #e8e8e8;
+    background: var(--color-surface);
+    border: 1.5px solid var(--color-border);
     border-radius: 10px;
     cursor: pointer;
     font-size: 13px;
     font-weight: 600;
-    color: #333;
+    color: var(--color-text);
     transition: all 0.2s;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    box-shadow: var(--shadow-sm);
 }
 
 .lang-trigger:hover {
-    border-color: #1d9e75;
-    color: #0f6e56;
+    border-color: var(--color-primary);
+    color: var(--color-primary-dark);
 }
 
 .lang-flag {
@@ -101,7 +101,7 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside))
 
 .lang-trigger .fa-chevron-down {
     font-size: 10px;
-    color: #999;
+    color: var(--color-text-faint);
     transition: transform 0.2s;
 }
 
@@ -114,10 +114,10 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside))
     top: calc(100% + 6px);
     right: 0;
     min-width: 180px;
-    background: white;
+    background: var(--color-surface);
     border-radius: 12px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-    border: 1px solid #eee;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--color-border);
     padding: 6px;
     overflow: hidden;
 }
@@ -133,18 +133,18 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside))
     border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
-    color: #333;
+    color: var(--color-text);
     text-align: left;
     transition: background 0.15s;
 }
 
 .lang-option:hover {
-    background: #f4f5f7;
+    background: var(--color-bg);
 }
 
 .lang-option.active {
-    background: #e1f5ee;
-    color: #0f6e56;
+    background: var(--color-primary-tint);
+    color: var(--color-primary-dark);
     font-weight: 600;
 }
 
@@ -153,7 +153,7 @@ onUnmounted(() => document.removeEventListener('click', onClickOutside))
 }
 
 .lang-check {
-    color: #1d9e75;
+    color: var(--color-primary);
     font-size: 12px;
 }
 

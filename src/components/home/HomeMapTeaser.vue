@@ -107,7 +107,7 @@ onBeforeUnmount(() => {
     display: inline-block;
     padding: 10px 18px;
     background: rgba(255, 255, 255, 0.94);
-    color: #172b26;
+    color: var(--color-text);
     font-weight: 700;
     font-size: 14px;
     border-radius: 999px;

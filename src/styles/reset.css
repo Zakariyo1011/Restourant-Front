@@ -1,0 +1,12 @@
+body {
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-family: var(--font-sans);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+*, *::before, *::after {
+  box-sizing: inherit;
+}

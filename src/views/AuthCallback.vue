@@ -20,13 +20,12 @@ onMounted(async () => {
         auth.setToken(token)
         await auth.fetchUser()
 
-        console.log('User role:', auth.user?.role)
-        console.log('isAdmin:', auth.isAdmin)
-
         if (auth.user?.role === 'admin') {
             router.push('/admin')
-        } else {
+        } else if (auth.user?.role === 'owner') {
             router.push('/dashboard')
+        } else {
+            router.push('/')
         }
     } else {
         router.push('/login')

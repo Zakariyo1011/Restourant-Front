@@ -332,7 +332,6 @@ const submit = () => {
 </script>
 
 <style scoped>
-@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -343,12 +342,12 @@ const submit = () => {
 .image-upload {
     position: relative;
     width: 100%; height: 200px;
-    border: 2px dashed #e0e0e0;
+    border: 2px dashed var(--color-border);
     border-radius: 16px; overflow: hidden;
     cursor: pointer; transition: border-color 0.2s;
-    background: #f9f9f9;
+    background: var(--color-bg);
 }
-.image-upload:hover { border-color: #1D9E75; }
+.image-upload:hover { border-color: var(--color-primary); }
 .preview-img { width: 100%; height: 100%; object-fit: cover; }
 .upload-placeholder {
     width: 100%; height: 100%;
@@ -357,13 +356,13 @@ const submit = () => {
 }
 .upload-icon {
     width: 56px; height: 56px;
-    background: #E1F5EE; border-radius: 50%;
+    background: var(--color-primary-tint); border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: 22px; color: #1D9E75;
+    font-size: 22px; color: var(--color-primary);
     margin-bottom: 4px;
 }
-.upload-title { font-size: 15px; font-weight: 600; color: #333; }
-.upload-sub { font-size: 12px; color: #aaa; }
+.upload-title { font-size: 15px; font-weight: 600; color: var(--color-text); }
+.upload-sub { font-size: 12px; color: var(--color-text-faint); }
 .upload-overlay {
     position: absolute; inset: 0;
     background: rgba(0,0,0,0.45);
@@ -385,56 +384,56 @@ const submit = () => {
 
 .field-label {
     display: flex; align-items: center; gap: 6px;
-    font-size: 13px; font-weight: 600; color: #444;
+    font-size: 13px; font-weight: 600; color: var(--color-text-muted);
 }
-.field-label i { color: #1D9E75; font-size: 12px; }
-.required { color: #E24B4A; }
+.field-label i { color: var(--color-primary); font-size: 12px; }
+.required { color: var(--color-danger); }
 
 .field-input {
     padding: 11px 14px;
-    border: 1.5px solid #e8e8e8;
+    border: 1.5px solid var(--color-border);
     border-radius: 10px; font-size: 14px;
     outline: none; transition: border 0.2s;
-    color: #1a1a1a; background: white;
+    color: var(--color-text); background: var(--color-surface);
 }
-.field-input:focus { border-color: #1D9E75; box-shadow: 0 0 0 3px rgba(29,158,117,0.1); }
-.field-input.error { border-color: #E24B4A; }
+.field-input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(108,92,231,0.1); }
+.field-input.error { border-color: var(--color-danger); }
 
 .field-textarea {
     padding: 11px 14px;
-    border: 1.5px solid #e8e8e8;
+    border: 1.5px solid var(--color-border);
     border-radius: 10px; font-size: 14px;
     outline: none; transition: border 0.2s;
-    color: #1a1a1a; resize: vertical;
+    color: var(--color-text); resize: vertical;
     font-family: inherit; line-height: 1.5;
 }
-.field-textarea:focus { border-color: #1D9E75; box-shadow: 0 0 0 3px rgba(29,158,117,0.1); }
+.field-textarea:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(108,92,231,0.1); }
 
-.field-hint { font-size: 11px; color: #bbb; text-align: right; }
-.field-error { font-size: 12px; color: #E24B4A; display: flex; align-items: center; gap: 4px; }
+.field-hint { font-size: 11px; color: var(--color-text-faint); text-align: right; }
+.field-error { font-size: 12px; color: var(--color-danger); display: flex; align-items: center; gap: 4px; }
 
 /* PHONE PREFIX */
 .input-with-prefix { display: flex; align-items: stretch; }
 .prefix {
     padding: 11px 12px;
-    background: #f4f5f7; border: 1.5px solid #e8e8e8;
+    background: var(--color-bg); border: 1.5px solid var(--color-border);
     border-right: none; border-radius: 10px 0 0 10px;
-    font-size: 14px; color: #555; font-weight: 500;
+    font-size: 14px; color: var(--color-text-muted); font-weight: 500;
 }
 .prefix-input { border-radius: 0 10px 10px 0 !important; flex: 1; }
 
 /* COORDS */
 .coords-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .coord-field { display: flex; flex-direction: column; gap: 4px; }
-.coord-label { font-size: 11px; color: #999; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+.coord-label { font-size: 11px; color: var(--color-text-faint); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
 .coord-hint {
     display: flex; align-items: center; gap: 6px;
-    font-size: 12px; color: #888;
-    background: #f4f5f7; border-radius: 8px; padding: 8px 12px;
+    font-size: 12px; color: var(--color-text-faint);
+    background: var(--color-bg); border-radius: 8px; padding: 8px 12px;
 }
-.coord-hint i { color: #1D9E75; flex-shrink: 0; }
+.coord-hint i { color: var(--color-primary); flex-shrink: 0; }
 .coord-link {
-    color: #1D9E75; text-decoration: none; font-weight: 500;
+    color: var(--color-primary); text-decoration: none; font-weight: 500;
     display: inline-flex; align-items: center; gap: 3px;
 }
 .coord-link i { font-size: 10px; }
@@ -442,7 +441,7 @@ const submit = () => {
 /* ERROR */
 .form-error {
     display: flex; align-items: center; gap: 8px;
-    background: #FCEBEB; color: #A32D2D;
+    background: var(--color-danger-tint); color: var(--color-danger-dark);
     padding: 12px 14px; border-radius: 10px; font-size: 13px;
 }
 
@@ -450,19 +449,19 @@ const submit = () => {
 .form-btns { display: flex; gap: 10px; padding-top: 4px; }
 .btn-save {
     flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 13px; background: #1D9E75; color: white;
+    padding: 13px; background: var(--color-primary); color: white;
     border: none; border-radius: 12px; font-size: 15px; font-weight: 600;
     cursor: pointer; transition: background 0.2s;
 }
-.btn-save:hover { background: #0F6E56; }
+.btn-save:hover { background: var(--color-primary-dark); }
 .btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
 .btn-cancel {
     display: flex; align-items: center; gap: 6px;
-    padding: 13px 20px; background: #f4f5f7; color: #555;
+    padding: 13px 20px; background: var(--color-bg); color: var(--color-text-muted);
     border: none; border-radius: 12px; font-size: 14px;
     cursor: pointer; transition: background 0.2s;
 }
-.btn-cancel:hover { background: #e8e8e8; }
+.btn-cancel:hover { background: var(--color-border); }
 
 /* PRICE OPTIONS */
 .price-options {
@@ -470,17 +469,17 @@ const submit = () => {
 }
 .price-option {
     flex: 1; padding: 10px;
-    border: 1.5px solid #e8e8e8;
+    border: 1.5px solid var(--color-border);
     border-radius: 10px; text-align: center;
     cursor: pointer; font-size: 15px; font-weight: 600;
-    color: #888; transition: all 0.2s;
+    color: var(--color-text-faint); transition: all 0.2s;
 }
 .price-option.active {
-    border-color: #1D9E75;
-    background: #E1F5EE;
-    color: #0F6E56;
+    border-color: var(--color-primary);
+    background: var(--color-primary-tint);
+    color: var(--color-primary-dark);
 }
-.price-option:hover { border-color: #1D9E75; }
+.price-option:hover { border-color: var(--color-primary); }
 
 /* MOBILE */
 @media (max-width: 480px) {

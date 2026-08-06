@@ -1,0 +1,100 @@
+:root {
+  /* Brand */
+  --color-primary: #6C5CE7;
+  --color-primary-dark: #4E3FCB;
+  --color-primary-darker: #3B2FA0;
+  --color-primary-light: #9B8FF0;
+  --color-primary-tint: #EFECFE;
+  --color-primary-tint-strong: #E0DBFC;
+
+  /* Status */
+  --color-danger: #E24B4A;
+  --color-danger-dark: #A32D2D;
+  --color-danger-tint: #FCEBEB;
+  --color-danger-tint-strong: #F7C1C1;
+  --color-warning: #EF9F27;
+  --color-warning-dark: #854F0B;
+  --color-warning-tint: #FAEEDA;
+  --color-info: #378ADD;
+  --color-info-dark: #185FA5;
+  --color-info-tint: #E6F1FB;
+  --color-success: #1D9E75;
+  --color-success-tint: #E1F5EE;
+
+  /* Neutrals */
+  --color-bg: #F6F5FB;
+  --color-surface: #FFFFFF;
+  --color-border: #E7E5F3;
+  --color-border-light: #F0EFF9;
+  --color-text: #1A1A2E;
+  --color-text-muted: #6B6B85;
+  --color-text-faint: #9A9AB0;
+
+  /* Type */
+  --font-sans: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
+  /* Shadow */
+  --shadow-sm: 0 2px 8px rgba(30, 20, 80, 0.06);
+  --shadow-md: 0 6px 20px rgba(30, 20, 80, 0.1);
+  --shadow-lg: 0 12px 32px rgba(30, 20, 80, 0.14);
+
+  /* Layout */
+  --breakpoint-mobile: 768px;
+  --sidebar-width: 260px;
+  --topbar-height: 72px;
+  --bottomnav-height: 64px;
+}
+
+:root[data-theme='dark'] {
+  /* Brand */
+  --color-primary: #7C6EF0;
+  --color-primary-dark: #9B8FF0;
+  --color-primary-darker: #B5ACF5;
+  --color-primary-light: #6C5CE7;
+  --color-primary-tint: #241F3D;
+  --color-primary-tint-strong: #322B54;
+
+  /* Status */
+  --color-danger: #F0605F;
+  --color-danger-dark: #FF8A8A;
+  --color-danger-tint: #3A2323;
+  --color-danger-tint-strong: #4A2B2B;
+  --color-warning: #F2B24C;
+  --color-warning-dark: #F7CE8A;
+  --color-warning-tint: #3A3020;
+  --color-info: #5AA3EA;
+  --color-info-dark: #8FC3F5;
+  --color-info-tint: #1F2C3A;
+  --color-success: #35C293;
+  --color-success-tint: #1B3630;
+
+  /* Neutrals */
+  --color-bg: #14121F;
+  --color-surface: #1D1B2E;
+  --color-border: #2E2B45;
+  --color-border-light: #262338;
+  --color-text: #F1F0FA;
+  --color-text-muted: #A8A5C2;
+  --color-text-faint: #726F91;
+
+  /* Shadow */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.24);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.32);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
